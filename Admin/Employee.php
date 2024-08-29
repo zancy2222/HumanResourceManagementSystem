@@ -1,10 +1,3 @@
-<?php
-include 'Partials/db_conn.php'; // Include your database connection file
-
-// Fetch all employee records from the database, including the 'id' column
-$query = "SELECT id, first_name, middle_name, last_name, email, age, password, profile_picture FROM hr_members";
-$result = $conn->query($query);
-?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -268,8 +261,8 @@ $result = $conn->query($query);
         </a>
 
         <a href="HrAccount.php">
-            <div class="nav-item active" data-tooltip="Add HR Account">
-                <img width="96" height="96" src="https://img.icons8.com/fluency-systems-regular/96/C44100/manager.png" alt="HR" />
+            <div class="nav-item" data-tooltip="Add HR Account">
+                <img width="96" height="96" src="https://img.icons8.com/fluency-systems-regular/96/manager.png" alt="HR" />
             </div>
         </a>
         <a href="Applicant.php">
@@ -278,8 +271,8 @@ $result = $conn->query($query);
             </div>
         </a>
         <a href="Employee.php">
-            <div class="nav-item" data-tooltip="Add Employee">
-                <img width="96" height="96" src="https://img.icons8.com/?size=100&id=19943&format=png&color=000000" alt="Applicant"/>
+            <div class="nav-item active" data-tooltip="Add Employee">
+                <img width="96" height="96" src="https://img.icons8.com/?size=100&id=19943&format=png&color=C44100" alt="Add employee"/>
             </div>
         </a>
         <a href="AuditTrail.php">
@@ -364,49 +357,11 @@ $branchesCount = 5;
             <table>
                 <thead>
                     <tr>
-                        <th>Full Name</th>
-                        <th>Email Address</th>
-                        <th>Age</th>
-                        <th>Password</th>
-                        <th>Profile Picture</th>
-                        <th>Actions</th>
+
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    if ($result->num_rows > 0) {
-                        // Output data for each row
-                        while ($row = $result->fetch_assoc()) {
-                            $fullName = htmlspecialchars($row['first_name'] . ' ' . $row['middle_name'] . ' ' . $row['last_name']);
-                            $email = htmlspecialchars($row['email']);
-                            $age = htmlspecialchars($row['age']);
-                            $password = htmlspecialchars($row['password']); // Display masked password
-                            $profilePicture = !empty($row['profile_picture']) ? htmlspecialchars($row['profile_picture']) : 'resources/default profile.png';
-
-                            // Ensure profile picture path is correct
-                            $profilePicturePath = 'Partials/' . $profilePicture;
-
-                            echo "<tr>
-                        <td>$fullName</td>
-                        <td>$email</td>
-                        <td>$age</td>
-                        <td>••••••••</td> <!-- Masked password for security reasons -->
-                        <td><img class='profile-img' src='$profilePicturePath' alt='Profile Image'></td>
-                        <td class='actions'>
-                            <button class='edit-btn' onclick='openEditModal(" . $row['id'] . ")'>Edit</button>
-<form method='post' action='delete.php' style='display:inline;'>
-                                <input type='hidden' name='id' value='" . $row['id'] . "'>
-                                <button type='submit' class='delete-btn'>Delete</button>
-                            </form>                        </td>
-                    </tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='6'>No records found</td></tr>";
-                    }
-
-                    // Close the database connection
-                    $conn->close();
-                    ?>
+                  
                 </tbody>
             </table>
 
@@ -424,41 +379,9 @@ $branchesCount = 5;
     <!-- Add Modal -->
     <div id="addModal" class="form-modal">
         <div class="form-modal-content">
-            <h2>Add New HR</h2>
-            <form action="Partials/add_HR.php" method="post" enctype="multipart/form-data">
-                <!-- Form fields for adding new employee -->
-                <div class="form-group">
-                    <label for="addFirstName">First Name</label>
-                    <input type="text" id="addFirstName" name="firstName" required>
-                </div>
-                <div class="form-group">
-                    <label for="addMiddleName">Middle Name</label>
-                    <input type="text" id="addMiddleName" name="middleName">
-                </div>
-                <div class="form-group">
-                    <label for="addLastName">Last Name</label>
-                    <input type="text" id="addLastName" name="lastName" required>
-                </div>
-                <div class="form-group">
-                    <label for="addEmail">Email Address</label>
-                    <input type="email" id="addEmail" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="addAge">Age</label>
-                    <input type="number" id="addAge" name="age" required>
-                </div>
-                <div class="form-group">
-                    <label for="addPassword">Password</label>
-                    <input type="password" id="addPassword" name="password" required>
-                </div>
-                <div class="form-group">
-                    <label class="file-label" for="addProfilePicture">Profile Picture</label>
-                    <input type="file" id="addProfilePicture" name="profilePicture">
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="save-btn">Save</button>
-                    <button type="button" class="cancel-btn" onclick="closeAddModal()">Cancel</button>
-                </div>
+            <h2>Add New Employee </h2>
+            <form action="Partials/add_Employee.php" method="post" enctype="multipart/form-data">
+              
             </form>
 
         </div>
@@ -468,42 +391,8 @@ $branchesCount = 5;
     <div id="editModal" class="form-modal">
         <div class="form-modal-content">
             <h2>Edit HR</h2>
-            <form id="editEmployeeForm" action="Partials/update_HR.php" method="post" enctype="multipart/form-data">
-                <input type="hidden" id="editEmployeeId" name="employeeId">
+            <form id="editEmployeeForm" action="Partials/update_Employee.php" method="post" enctype="multipart/form-data">
 
-                <!-- Form fields for editing employee data -->
-                <div class="form-group">
-                    <label for="editFirstName">First Name</label>
-                    <input type="text" id="editFirstName" name="firstName" required>
-                </div>
-                <div class="form-group">
-                    <label for="editMiddleName">Middle Name</label>
-                    <input type="text" id="editMiddleName" name="middleName">
-                </div>
-                <div class="form-group">
-                    <label for="editLastName">Last Name</label>
-                    <input type="text" id="editLastName" name="lastName" required>
-                </div>
-                <div class="form-group">
-                    <label for="editEmail">Email Address</label>
-                    <input type="email" id="editEmail" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="editAge">Age</label>
-                    <input type="number" id="editAge" name="age" required>
-                </div>
-                <div class="form-group">
-                    <label for="editPassword">Re Enter Password</label>
-                    <input type="password" id="editPassword" name="password" required>
-                </div>
-                <div class="form-group">
-                    <label class="file-label" for="editProfilePicture">Profile Picture</label>
-                    <input type="file" id="editProfilePicture" name="profilePicture">
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="save-btn">Save</button>
-                    <button type="button" class="cancel-btn" onclick="closeEditModal()">Cancel</button>
-                </div>
             </form>
         </div>
     </div>
@@ -545,26 +434,7 @@ $branchesCount = 5;
             document.getElementById('editModal').style.display = 'none';
         }
     </script>
-    <script>
-        function openEditModal(id) {
-            fetch('Partials/get_HR.php?id=' + id)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('editEmployeeId').value = id;
-                    document.getElementById('editFirstName').value = data.first_name;
-                    document.getElementById('editMiddleName').value = data.middle_name;
-                    document.getElementById('editLastName').value = data.last_name;
-                    document.getElementById('editEmail').value = data.email;
-                    document.getElementById('editAge').value = data.age;
-                    document.getElementById('editPassword').value = ''; // Leave empty
-                    document.getElementById('editModal').style.display = 'block';
-                });
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
-    </script>
+   
 
 </body>
 

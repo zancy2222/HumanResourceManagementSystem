@@ -326,11 +326,17 @@ if (($handle = fopen($filename, "r")) !== FALSE) {
                 <img width="96" height="96" src="https://img.icons8.com/?size=100&id=26001&format=png&color=000000" alt="Evaluation Score" />
             </div>
         </a>
+        <a href="Resign.php">
+            <div class="nav-item" data-tooltip="Resignation">
+                <img width="96" height="96" src="https://img.icons8.com/?size=100&id=CbeQMEkEaRur&format=png&color=000000" alt="Profile" />
+            </div>
+        </a>
         <a href="Branches.php">
             <div class="nav-item" data-tooltip="Branches">
                 <img width="96" height="96" src="https://img.icons8.com/?size=100&id=A2JbOkejboJA&format=png&color=000000" alt="Evaluation Score" />
             </div>
         </a>
+        
         <a href="Graph.php">
             <div class="nav-item" data-tooltip="Statistics">
                 <img width="96" height="96" src="https://img.icons8.com/fluency-systems-regular/96/investment-portfolio.png" alt="Stats" />

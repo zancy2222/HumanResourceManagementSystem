@@ -316,6 +316,11 @@ $result = $conn->query($query);
                 <img width="96" height="96" src="https://img.icons8.com/fluency-systems-regular/96/C44100/open-resume.png" alt="Applicant"/>
             </div>
         </a>
+        <a href="Employee.php">
+            <div class="nav-item" data-tooltip="Add Employee">
+                <img width="96" height="96" src="https://img.icons8.com/?size=100&id=19943&format=png&color=000000" alt="Applicant"/>
+            </div>
+        </a>
         <a href="AuditTrail.php">
             <div class="nav-item" data-tooltip="Audit Trail">
                 <img width="96" height="96" src="https://img.icons8.com/?size=100&id=o3t2bZRRLDfd&format=png&color=000000" alt="Audit"/>

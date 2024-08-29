@@ -5,7 +5,7 @@ CREATE TABLE Users (
     surname VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     phone VARCHAR(20) NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL, 
     subject VARCHAR(255) NOT NULL,
     experience VARCHAR(255) NOT NULL,
     cv_filename VARCHAR(255),
@@ -110,4 +110,12 @@ CREATE TABLE BranchAssignments (
     branch_name VARCHAR(255) NOT NULL,
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+CREATE TABLE Resignations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id VARCHAR(7) NOT NULL,
+    resignation_date DATE NOT NULL,
+    reason TEXT NOT NULL,
+    date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES Employee(employee_id) ON DELETE CASCADE
 );

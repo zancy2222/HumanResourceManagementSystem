@@ -231,17 +231,16 @@ $branchesCount = 5;
 </div>
 <div class="resignation-form-container">
     <h2>Resignation Letter</h2>
-    <form action="submit_resignation.php" method="post">
-      
+    <form action="Partials/submit_resignation.php" method="post">
+    <label for="resignation-date">Resignation Date:</label>
+    <input type="date" id="resignation-date" name="resignation_date" required>
 
-        <label for="resignation-date">Resignation Date:</label>
-        <input type="date" id="resignation-date" name="resignation_date" required>
+    <label for="reason">Reason for Resignation:</label>
+    <textarea id="reason" name="reason" required></textarea>
 
-        <label for="reason">Reason for Resignation:</label>
-        <textarea id="reason" name="reason" required></textarea>
+    <button type="submit">Submit Resignation</button>
+</form>
 
-        <button type="submit">Submit Resignation</button>
-    </form>
 </div>
 
     </div>

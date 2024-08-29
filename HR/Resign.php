@@ -1,13 +1,13 @@
 <?php
-include 'Partials/db_conn.php';
-session_start();
-
+include '../Admin/Partials/db_conn.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/SMTP.php';
+
+session_start();
 
 if (!isset($_SESSION['email'])) {
     header("Location: ../login.php");
@@ -16,6 +16,7 @@ if (!isset($_SESSION['email'])) {
 
 $email = $_SESSION['email'];
 
+// Fetch HR member's details
 $stmt = $conn->prepare("SELECT first_name, middle_name, last_name, profile_picture FROM hr_members WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
@@ -30,111 +31,74 @@ if ($hr_member) {
     exit();
 }
 
-// Fetch employees
-$employee_query = "SELECT CONCAT(firstname, ' ', middlename, ' ', surname) AS full_name, id, email FROM Users";
-$employees = $conn->query($employee_query);
+// Process Approve or Delete action
+if (isset($_POST['action']) && isset($_POST['resignation_id']) && isset($_POST['employee_email'])) {
+    $action = $_POST['action'];
+    $resignationId = $_POST['resignation_id'];
+    $employeeEmail = $_POST['employee_email'];
 
-// Fetch branch assignments
-$assignment_query = "SELECT CONCAT(firstname, ' ', middlename, ' ', surname) AS full_name, branch_name, BranchAssignments.id, Users.email
-                     FROM BranchAssignments
-                     JOIN Users ON BranchAssignments.employee_id = Users.id";
-$assignments = $conn->query($assignment_query);
-
-// Configure PHPMailer
-$mail = new PHPMailer(true);
-
-try {
-    $mail->isSMTP();
-    $mail->Host       = 'smtp.gmail.com';
-    $mail->SMTPAuth   = true;
-    $mail->Username   = 'danielzanbaltazar.forwork@gmail.com'; // Your email
-    $mail->Password   = 'nqzk mmww mxin ikve'; // Your email password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port       = 587;
-} catch (Exception $e) {
-    echo "Mailer Error: " . $mail->ErrorInfo;
-}
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['employee']) && isset($_POST['branch'])) {
-        $employee_id = $_POST['employee'];
-        $branch_name = $_POST['branch'];
-
-        // Save to database
-        $insert_stmt = $conn->prepare("INSERT INTO BranchAssignments (employee_id, branch_name) VALUES (?, ?)");
-        $insert_stmt->bind_param("is", $employee_id, $branch_name);
-        $insert_stmt->execute();
-
-        if ($insert_stmt->affected_rows > 0) {
-            // Fetch employee email
-            $email_query = $conn->prepare("SELECT email FROM Users WHERE id = ?");
-            $email_query->bind_param("i", $employee_id);
-            $email_query->execute();
-            $email_result = $email_query->get_result();
-            $employee_email = $email_result->fetch_assoc()['email'];
-
-            // Send email notification
-            $mail->setFrom('danielzanbaltazar.forwork@gmail.com', 'Branch Assignment System');
-            $mail->addAddress($employee_email);
-            $mail->Subject = 'Branch Assignment Notification';
-            $mail->Body    = "Hello,\n\nYou have been assigned to the branch: $branch_name.\n\nBest regards,\nBranch Assignment System";
-
-            try {
-                $mail->send();
-            } catch (Exception $e) {
-                echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-            }
-
-            header("Location: Branches.php");
-            exit();
-        } else {
-            echo '<p>Error saving branch assignment.</p>';
-        }
+    if ($action === 'approve') {
+        $subject = "Resignation Approved";
+        $body = "Your resignation has been approved.";
+    } elseif ($action === 'delete') {
+        $subject = "Resignation Declined";
+        $body = "Your resignation has been declined.";
     }
 
-    if (isset($_POST['delete_id'])) {
-        $delete_id = $_POST['delete_id'];
+    // Send email notification
+    $mail = new PHPMailer(true);
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'danielzanbaltazar.forwork@gmail.com'; // Change this to your email
+        $mail->Password   = 'nqzk mmww mxin ikve'; // Change this to your email password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
 
-        // Fetch branch name and employee email before deletion
-        $assignment_query = $conn->prepare("SELECT branch_name, Users.email 
-                                            FROM BranchAssignments 
-                                            JOIN Users ON BranchAssignments.employee_id = Users.id 
-                                            WHERE BranchAssignments.id = ?");
-        $assignment_query->bind_param("i", $delete_id);
-        $assignment_query->execute();
-        $assignment_result = $assignment_query->get_result();
-        $assignment = $assignment_result->fetch_assoc();
-        $branch_name = $assignment['branch_name'];
-        $employee_email = $assignment['email'];
+        // Recipients
+        $mail->setFrom('danielzanbaltazar.forwork@gmail.com', 'HR Department');
+        $mail->addAddress($employeeEmail);
 
-        // Delete from database
-        $delete_stmt = $conn->prepare("DELETE FROM BranchAssignments WHERE id = ?");
-        $delete_stmt->bind_param("i", $delete_id);
-        $delete_stmt->execute();
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body    = $body;
 
-        if ($delete_stmt->affected_rows > 0) {
-            // Send email notification
-            $mail->setFrom('danielzanbaltazar.forwork@gmail.com', 'Branch Assignment System');
-            $mail->addAddress($employee_email);
-            $mail->Subject = 'Branch Assignment Removal Notification';
-            $mail->Body    = "Hello,\n\nYour branch assignment for the branch: $branch_name has been removed.\n\nBest regards,\nBranch Assignment System";
-
-            try {
-                $mail->send();
-            } catch (Exception $e) {
-                echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        // Send email and then delete the record
+        if ($mail->send()) {
+            if ($action === 'delete') {
+                $stmt = $conn->prepare("DELETE FROM Resignations WHERE id = ?");
+                $stmt->bind_param("i", $resignationId);
+                if ($stmt->execute()) {
+                    header("Location: Resign.php");
+                    exit();
+                } else {
+                    echo 'Error: Could not delete resignation record.';
+                }
+                $stmt->close();
             }
-
-            header("Location: Branches.php");
-            exit();
         } else {
-            echo '<p>Error deleting branch assignment.</p>';
+            echo 'Error: Message could not be sent. Mailer Error: ' . $mail->ErrorInfo;
         }
+    } catch (Exception $e) {
+        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
     }
 }
-?>
 
-
+// Fetch resignation details
+$stmt = $conn->prepare("
+    SELECT r.id, r.employee_id, r.resignation_date, r.reason, r.date_submitted, 
+           CONCAT(u.firstname, ' ', u.middlename, ' ', u.surname) AS employee_name, u.email AS employee_email
+    FROM Resignations r
+    JOIN Employee e ON r.employee_id = e.employee_id
+    JOIN ArchiveApplicant aa ON e.archive_applicant_id = aa.id
+    JOIN Users u ON aa.user_id = u.id
+");
+$stmt->execute();
+$result = $stmt->get_result();
+?> 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -157,39 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-radius: 10px;
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         }
-        table select {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    font-size: 16px;
-    color: #333;
-    background-color: #f9f9f9;
-    transition: border-color 0.3s, background-color 0.3s;
-}
 
-/* Style for the select dropdown on focus */
-table select:focus {
-    border-color: #ff7e20; /* Change border color on focus */
-    background-color: #fff; /* Change background color on focus */
-    outline: none; /* Remove default outline */
-}
-
-/* Add some styling to the select options */
-table select option {
-    padding: 10px;
-}
-
-/* Styling the select elements in the form */
-.table-header form {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-.table-header label {
-    margin-right: 10px;
-    font-weight: bold;
-}
         .table-header {
             display: flex;
             justify-content: space-between;
@@ -212,7 +144,24 @@ table select option {
             background-color: #218838;
         }
 
-        
+        .search-bar {
+            position: relative;
+            width: 300px;
+            margin-right: 30px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 20px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .search-bar input::placeholder {
+            color: #6c757d;
+        }
 
         table {
             width: 100%;
@@ -255,19 +204,12 @@ table select option {
             background-color: #0056b3;
         }
 
-         .delete-btn {
-            padding: 10px 20px;
-         
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
+        .actions .delete-btn {
             background-color: #dc3545;
             color: #fff;
         }
 
-        .delete-btn:hover {
+        .actions .delete-btn:hover {
             background-color: #c82333;
         }
 
@@ -333,7 +275,105 @@ table select option {
             cursor: pointer;
         }
 
+/* Popup Modal styling */
+.popup-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+}
 
+.popup-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 60%;
+    max-width: 700px;
+    text-align: left;
+}
+
+.popup-close {
+    color: #333;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.popup-close:hover,
+.popup-close:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+.popup-content h2 {
+    margin-bottom: 20px;
+    color: #538392;
+}
+
+.popup-content p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.popup-content p strong {
+    color: #333;
+}
+
+.popup-content a {
+    color: #538392;
+    text-decoration: underline;
+}
+
+.popup-content a:hover {
+    text-decoration: none;
+}
+.shortlisted-applicant {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.shortlisted-applicant h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #538392;
+    margin: 0;
+}
+.approve-btn, .delete-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        margin-right: 8px;
+        color: #fff;
+        transition: background-color 0.3s ease;
+    }
+
+    .approve-btn {
+        background-color: #4CAF50; /* Green */
+    }
+
+    .approve-btn:hover {
+        background-color: #45a049; /* Darker Green */
+    }
+
+    .delete-btn {
+        background-color: #f44336; /* Red */
+    }
+
+    .delete-btn:hover {
+        background-color: #d32f2f; /* Darker Red */
+    }
     </style>
 </head>
 <body>
@@ -342,7 +382,7 @@ table select option {
 
         <a href="HR_Dashboard.php">
             <div class="nav-item" data-tooltip="Dashboard">
-                <img width="96" height="96" src="https://img.icons8.com/fluency-systems-regular//dashboard-layout.png" alt="Dashboard"/>
+                <img width="96" height="96" src="https://img.icons8.com/fluency-systems-regular/96/dashboard-layout.png" alt="Dashboard"/>
             </div>
         </a>
         
@@ -378,13 +418,13 @@ table select option {
             </div>
         </a>
         <a href="Resign.php">
-            <div class="nav-item" data-tooltip="Resignation">
-                <img width="96" height="96" src="https://img.icons8.com/?size=100&id=CbeQMEkEaRur&format=png&color=000000" alt="Profile" />
+            <div class="nav-item active" data-tooltip="Resignation">
+                <img width="96" height="96" src="https://img.icons8.com/?size=100&id=CbeQMEkEaRur&format=png&color=C44100" alt="Profile" />
             </div>
         </a>
         <a href="Branches.php">
-            <div class="nav-item active" data-tooltip="Branches">
-                <img width="96" height="96" src="https://img.icons8.com/?size=100&id=A2JbOkejboJA&format=png&color=C44100" alt="Evaluation Score" />
+            <div class="nav-item" data-tooltip="Branches">
+                <img width="96" height="96" src="https://img.icons8.com/?size=100&id=A2JbOkejboJA&format=png&color=000000" alt="Evaluation Score" />
             </div>
         </a>
         <a href="Graph.php">
@@ -456,57 +496,51 @@ $branchesCount = 5;
     </div>
 </div>
 
+
 <div class="table-container">
-    <div class="Branches">
-        <h2>Branches</h2>
-    </div>
+            <!-- Table Container -->
+            <div class="shortlisted-applicant">
+    <h2>Resignation Employee</h2>
+</div>
     <div class="table-header">
-        <form id="branch-form" method="POST">
-            <label for="employee">Select Employee:</label>
-            <select id="employee" name="employee" required>
-                <!-- Options will be dynamically added here -->
-            </select>
-            <label for="branch">Select Branch:</label>
-            <select id="branch" name="branch" required>
-                <option value="Main Branch">Main Branch</option>
-                <option value="Jacob">Jacob</option>
-                <option value="Peñafrancia">Peñafrancia</option>
-                <option value="P Diaz">P Diaz</option>
-                <option value="Conception">Conception</option>
-            </select>
-            <button type="submit" class="add-btn">Save</button>
-        </form>
+        <div class="search-bar">
+            <input type="text" placeholder="Search...">
+        </div>
     </div>
-    <table id="branch-table">
+    <table>
     <thead>
         <tr>
+            <th>Resignation ID</th>
+            <th>Employee ID</th>
             <th>Employee Name</th>
-            <th>Branch</th>
-            <th>Action</th> <!-- New column for actions -->
+            <th>Resignation Date</th>
+            <th>Reason</th>
+            <th>Date Submitted</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
-        <?php if ($assignments->num_rows > 0): ?>
-            <?php while ($row = $assignments->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['full_name']); ?></td>
-                    <td><?php echo htmlspecialchars($row['branch_name']); ?></td>
-                    <td>
-                        <form method="POST" style="display: inline;">
-                            <input type="hidden" name="delete_id" value="<?php echo $row['id']; ?>">
-                            <button type="submit" name="delete" class="delete-btn">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <tr>
-                <td colspan="3">No assignments found.</td>
-            </tr>
-        <?php endif; ?>
+        <?php while ($row = $result->fetch_assoc()): ?>
+        <tr>
+            <td><?php echo htmlspecialchars($row['id']); ?></td>
+            <td><?php echo htmlspecialchars($row['employee_id']); ?></td>
+            <td><?php echo htmlspecialchars($row['employee_name']); ?></td>
+            <td><?php echo htmlspecialchars($row['resignation_date']); ?></td>
+            <td><?php echo htmlspecialchars($row['reason']); ?></td>
+            <td><?php echo htmlspecialchars($row['date_submitted']); ?></td>
+            <td>
+    <form method="POST" action="">
+        <input type="hidden" name="resignation_id" value="<?php echo $row['id']; ?>">
+        <input type="hidden" name="employee_email" value="<?php echo $row['employee_email']; ?>">
+        <button type="submit" name="action" value="approve" class="approve-btn">Approve</button>
+        <button type="submit" name="action" value="delete" class="delete-btn">Delete</button>
+    </form>
+</td>
+
+        </tr>
+        <?php endwhile; ?>
     </tbody>
 </table>
-
 
     <div class="pagination">
         <button class="disabled">&laquo; Previous</button>
@@ -541,22 +575,7 @@ $branchesCount = 5;
             window.location.href = '../login.php';
         }
     </script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const employeeSelect = document.getElementById('employee');
-    
-    <?php if ($employees->num_rows > 0): ?>
-        <?php while ($row = $employees->fetch_assoc()): ?>
-            const option = document.createElement('option');
-            option.value = '<?php echo $row['id']; ?>';
-            option.textContent = '<?php echo htmlspecialchars($row['full_name']); ?>';
-            employeeSelect.appendChild(option);
-        <?php endwhile; ?>
-    <?php endif; ?>
-});
 
- 
-</script>
 
 </body>
 </html>
