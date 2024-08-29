@@ -1,3 +1,13 @@
+<?php
+include 'Partials/db_conn.php'; // Include your database connection file
+
+// Fetch employee data from the database
+$query = "SELECT e.employee_id, u.firstname, u.middlename, u.surname, u.email, u.phone, e.hire_date 
+          FROM Employee e
+          JOIN ArchiveApplicant a ON e.archive_applicant_id = a.id
+          JOIN Users u ON a.user_id = u.id";
+$result = $conn->query($query);
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,105 +21,118 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;700&family=Shadows+Into+Light&display=swap" rel="stylesheet">
     <style>
-        .form-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
+/* Modal background overlay */
+.form-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
 
-        .form-modal-content {
-            background-color: #fff;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 60%;
-            max-width: 600px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            font-size: 16px;
-        }
+/* Modal content */
+.form-modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-size: 16px;
+}
 
-        .form-modal-content h2 {
-            margin-top: 0;
-            font-size: 24px;
-            color: #333;
-        }
+/* Modal header */
+.form-modal-content h2 {
+    margin-top: 0;
+    font-size: 24px;
+    color: #333;
+}
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+/* Form groups */
+.form-group {
+    margin-bottom: 15px;
+}
 
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
 
-        .form-group input[type="text"],
-        .form-group input[type="email"],
-        .form-group input[type="password"],
-        .form-group input[type="number"],
-        .form-group input[type="file"] {
-            width: 95%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="number"],
+.form-group input[type="file"],
+.form-group input[type="date"],
+.form-group select {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
 
-        .form-group input[type="file"] {
-            padding: 3px;
-        }
+/* File input specific styling */
+.form-group input[type="file"] {
+    padding: 5px;
+}
 
-        .form-group .file-label {
-            display: block;
-            font-size: 14px;
-            color: #555;
-        }
+/* File label */
+.form-group .file-label {
+    display: block;
+    font-size: 14px;
+    color: #555;
+}
 
-        .modal-actions {
-            text-align: center;
-            margin-top: 20px;
-        }
+/* Modal actions */
+.modal-actions {
+    text-align: center;
+    margin-top: 20px;
+}
 
-        .modal-actions button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s, box-shadow 0.3s;
-            margin: 5px;
-        }
+/* Buttons */
+.modal-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    margin: 5px;
+}
 
-        .modal-actions .save-btn {
-            background-color: #f16e26;
-            color: #fff;
-            border: 1px solid #f16e26;
-        }
+/* Save button */
+.modal-actions .save-btn {
+    background-color: #f16e26;
+    color: #fff;
+    border: 1px solid #f16e26;
+}
 
-        .modal-actions .save-btn:hover {
-            background-color: #c44100;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
+.modal-actions .save-btn:hover {
+    background-color: #c44100;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
-        .modal-actions .cancel-btn {
-            background-color: #fff;
-            color: #5e5e5e;
-            border: 1px solid #5e5e5e;
-        }
+/* Cancel button */
+.modal-actions .cancel-btn {
+    background-color: #fff;
+    color: #5e5e5e;
+    border: 1px solid #5e5e5e;
+}
 
-        .modal-actions .cancel-btn:hover {
-            background-color: #5e5e5e;
-            color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
+.modal-actions .cancel-btn:hover {
+    background-color: #5e5e5e;
+    color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
         .table-container {
             margin-top: 50px;
@@ -354,16 +377,39 @@ $branchesCount = 5;
                     <input type="text" placeholder="Search...">
                 </div>
             </div>
-            <table>
-                <thead>
-                    <tr>
 
-                    </tr>
-                </thead>
-                <tbody>
-                  
-                </tbody>
-            </table>
+            <table>
+    <thead>
+        <tr>
+            <th>Employee ID</th>
+            <th>First Name</th>
+            <th>Middle Name</th>
+            <th>Surname</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Hire Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>";
+                echo "<td>" . $row['employee_id'] . "</td>";
+                echo "<td>" . $row['firstname'] . "</td>";
+                echo "<td>" . $row['middlename'] . "</td>";
+                echo "<td>" . $row['surname'] . "</td>";
+                echo "<td>" . $row['email'] . "</td>";
+                echo "<td>" . $row['phone'] . "</td>";
+                echo "<td>" . $row['hire_date'] . "</td>";
+                echo "</tr>";
+            }
+        } else {
+            echo "<tr><td colspan='7'>No employees found.</td></tr>";
+        }
+        ?>
+    </tbody>
+</table>
 
             <div class="pagination">
                 <button class="disabled">&laquo; Previous</button>
@@ -375,17 +421,122 @@ $branchesCount = 5;
         </div>
 
     </div>
+<!-- Add Modal -->
+<div id="addModal" class="form-modal">
+    <div class="form-modal-content">
+        <h2>Add New Employee</h2>
+        <form action="Partials/add_Employee.php" method="post" enctype="multipart/form-data">
+            <!-- User Details -->
+            <h3>User Details</h3>
+            <div class="form-group">
+                <label for="firstname">First Name:</label>
+                <input type="text" id="firstname" name="firstname" required>
+            </div>
+            <div class="form-group">
+                <label for="middlename">Middle Name:</label>
+                <input type="text" id="middlename" name="middlename" required>
+            </div>
+            <div class="form-group">
+                <label for="surname">Surname:</label>
+                <input type="text" id="surname" name="surname" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone:</label>
+                <input type="text" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
 
-    <!-- Add Modal -->
-    <div id="addModal" class="form-modal">
-        <div class="form-modal-content">
-            <h2>Add New Employee </h2>
-            <form action="Partials/add_Employee.php" method="post" enctype="multipart/form-data">
-              
-            </form>
+            <div class="form-group">
+                <label for="subject">Majoring Subject:</label>
+                <select id="subject" name="subject" required>
+                    <option value="" disabled selected hidden>Select Subject</option>
+                    <option value="Filipino">Filipino</option>
+                    <option value="English">English</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Science">Science</option>
+                    <option value="Araling Panlipunan">Araling Panlipunan</option>
+                    <option value="Edukasyon sa Pagpapakatao">Edukasyon sa Pagpapakatao</option>
+                    <option value="MAPEH">MAPEH</option>
+                    <option value="Mother Tongue-Based Multilingual Education (Bicol)">Mother Tongue-Based Multilingual Education (Bicol)</option>
+                </select>
+            </div>
 
-        </div>
+            <div class="form-group">
+                <label for="experience">Years of Experience:</label>
+                <select id="experience" name="experience" required>
+                    <option value="" disabled selected hidden>Select Experience</option>
+                    <option value="fresh graduate">Fresh Graduate</option>
+                    <option value="1">1 Year</option>
+                    <option value="2">2 Years</option>
+                    <option value="3">3 Years</option>
+                    <option value="4">4 Years</option>
+                    <option value="5">5 Years</option>
+                    <option value="6">6 Years</option>
+                    <option value="7">7 Years</option>
+                    <option value="8">8 Years</option>
+                    <option value="9">9 Years</option>
+                    <option value="10">10 Years</option>
+                    <option value="11">11 Years</option>
+                    <option value="12">12 Years</option>
+                    <option value="13">13 Years</option>
+                    <option value="14">14 Years</option>
+                    <option value="15">15 Years</option>
+                    <option value="16">16 Years</option>
+                    <option value="17">17 Years</option>
+                    <option value="18">18 Years</option>
+                    <option value="19">19 Years</option>
+                    <option value="20+">20+ Years</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cv_filename">CV Filename:</label>
+                <input type="file" id="cv_filename" name="cv_filename">
+            </div>
+            <div class="form-group">
+                <label for="profile_filename">Profile Picture:</label>
+                <input type="file" id="profile_filename" name="profile_filename">
+            </div>
+
+            <!-- Archive Applicant Details -->
+            <h3>Archive Applicant Details</h3>
+            <div class="form-group">
+                <label for="status">Status:</label>
+                <select id="status" name="status" required>
+                    <option value="" disabled selected hidden>Select Status</option>
+                    <option value="Account Creation">Account Creation</option>
+                    <option value="Interview">Interview</option>
+                    <option value="Demo Teaching">Demo Teaching</option>
+                    <option value="Hire">Hire</option>
+                </select>
+            </div>
+
+            <!-- Employee Details -->
+            <h3>Employee Details</h3>
+            <div class="form-group">
+                <label for="employee_id">Employee ID:</label>
+                <input type="text" id="employee_id" name="employee_id" required>
+            </div>
+            <div class="form-group">
+                <label for="hire_date">Hire Date:</label>
+                <input type="date" id="hire_date" name="hire_date" required>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" name="submit" class="save-btn">Add Employee</button>
+                <button type="button" class="cancel-btn" onclick="document.getElementById('addModal').style.display='none'">Cancel</button>
+            </div>
+        </form>
     </div>
+</div>
+
 
     <!-- Edit Modal -->
     <div id="editModal" class="form-modal">

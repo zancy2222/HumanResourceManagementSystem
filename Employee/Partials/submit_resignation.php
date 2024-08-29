@@ -41,8 +41,8 @@ if ($employee) {
         $stmt->bind_param("sss", $employeeId, $resignationDate, $reason);
 
         if ($stmt->execute()) {
-            // Redirect to a success page or show a success message
-            echo "Resignation submitted successfully!";
+            header("Location: ../Resign.php"); // Redirect to the main page after update
+            exit();
         } else {
             // Handle the error if the query fails
             echo "Error: " . $stmt->error;

@@ -82,7 +82,7 @@ session_start(); // Ensure this is at the top
     
     <button type="submit" class="retrieve-button">Retrieve</button>
     <div class="footer">
-        <p>Already Changed? <a href="/login.html">Log In</a></p>
+        <p>Already Changed? <a href="login.php">Log In</a></p>
     </div>
 </form>
 
