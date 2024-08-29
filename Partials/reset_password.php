@@ -164,7 +164,7 @@ body {
 </style>
 <form class="form" action="process_reset_password.php" method="post">
     <div class="header">
-        <img src="resources/logo.png" alt="Logo">
+        <img src="../resources/logo.png" alt="Logo">
         <h1>THE MINDS THAT MATTER SCHOOL</h1>
         <p class="forgot-password-text">Reset Password</p>
         <p class="subtext">Set your new password</p>

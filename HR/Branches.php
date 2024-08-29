@@ -32,7 +32,11 @@ if ($hr_member) {
 
 // Fetch employees
 $employee_query = "SELECT CONCAT(firstname, ' ', middlename, ' ', surname) AS full_name, id, email FROM Users";
-$employees = $conn->query($employee_query);
+$employees_result = $conn->query($employee_query);
+$employees = [];
+while ($row = $employees_result->fetch_assoc()) {
+    $employees[] = $row;
+}
 
 // Fetch branch assignments
 $assignment_query = "SELECT CONCAT(firstname, ' ', middlename, ' ', surname) AS full_name, branch_name, BranchAssignments.id, Users.email
@@ -133,7 +137,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -461,21 +464,21 @@ $branchesCount = 5;
         <h2>Branches</h2>
     </div>
     <div class="table-header">
-        <form id="branch-form" method="POST">
-            <label for="employee">Select Employee:</label>
-            <select id="employee" name="employee" required>
-                <!-- Options will be dynamically added here -->
-            </select>
-            <label for="branch">Select Branch:</label>
-            <select id="branch" name="branch" required>
-                <option value="Main Branch">Main Branch</option>
-                <option value="Jacob">Jacob</option>
-                <option value="Peñafrancia">Peñafrancia</option>
-                <option value="P Diaz">P Diaz</option>
-                <option value="Conception">Conception</option>
-            </select>
-            <button type="submit" class="add-btn">Save</button>
-        </form>
+    <form id="branch-form" method="POST">
+        <label for="employee">Select Employee:</label>
+        <select id="employee" name="employee" required>
+            <!-- Options will be dynamically added here -->
+        </select>
+        <label for="branch">Select Branch:</label>
+        <select id="branch" name="branch" required>
+            <option value="Main Branch">Main Branch</option>
+            <option value="Jacob">Jacob</option>
+            <option value="Peñafrancia">Peñafrancia</option>
+            <option value="P Diaz">P Diaz</option>
+            <option value="Conception">Conception</option>
+        </select>
+        <button type="submit" class="add-btn">Save</button>
+    </form>
     </div>
     <table id="branch-table">
     <thead>
@@ -541,22 +544,20 @@ $branchesCount = 5;
             window.location.href = '../login.php';
         }
     </script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const employeeSelect = document.getElementById('employee');
-    
-    <?php if ($employees->num_rows > 0): ?>
-        <?php while ($row = $employees->fetch_assoc()): ?>
-            const option = document.createElement('option');
-            option.value = '<?php echo $row['id']; ?>';
-            option.textContent = '<?php echo htmlspecialchars($row['full_name']); ?>';
-            employeeSelect.appendChild(option);
-        <?php endwhile; ?>
-    <?php endif; ?>
-});
-
- 
-</script>
+   <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const employeeSelect = document.getElementById('employee');
+            
+            const employees = <?php echo json_encode($employees); ?>;
+            
+            employees.forEach(function(employee) {
+                const option = document.createElement('option');
+                option.value = employee.id;
+                option.textContent = employee.full_name;
+                employeeSelect.appendChild(option);
+            });
+        });
+    </script>
 
 </body>
 </html>

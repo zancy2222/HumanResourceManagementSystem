@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($stmt->execute()) {
             $_SESSION['message'] = ['class' => 'success', 'text' => 'Password has been reset successfully.'];
-            header("Location: login.html");
+            header("Location: ../login.php");
             exit();
         } else {
             $_SESSION['message'] = ['class' => 'error', 'text' => 'Error: ' . $stmt->error];

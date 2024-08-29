@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         move_uploaded_file($_FILES['cv_filename']['tmp_name'], '../../Partials/uploads/' . $cv_filename);
     }
     if ($profile_filename) {
-        move_uploaded_file($_FILES['profile_filename']['tmp_name'], 'uploads/' . $profile_filename);
+        move_uploaded_file($_FILES['profile_filename']['tmp_name'], '../../Partials/uploads/' . $profile_filename);
     }
 
     // Insert into Users table

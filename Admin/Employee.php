@@ -506,14 +506,11 @@ $branchesCount = 5;
             </div>
 
             <!-- Archive Applicant Details -->
-            <h3>Archive Applicant Details</h3>
+            <h3>STATUS</h3>
             <div class="form-group">
                 <label for="status">Status:</label>
                 <select id="status" name="status" required>
                     <option value="" disabled selected hidden>Select Status</option>
-                    <option value="Account Creation">Account Creation</option>
-                    <option value="Interview">Interview</option>
-                    <option value="Demo Teaching">Demo Teaching</option>
                     <option value="Hire">Hire</option>
                 </select>
             </div>

@@ -36,7 +36,7 @@ if ($employee) {
     $phone = htmlspecialchars($employee['phone']);
     $experience = htmlspecialchars($employee['experience']);
     $subject = htmlspecialchars($employee['subject']);
-    $profileImage = !empty($employee['profile_filename']) ? '../Admin/Partials/uploads/' . htmlspecialchars($employee['profile_filename']) : '../Admin/Partials/resources/default_profile.png';
+    $profileImage = !empty($employee['profile_filename']) ? '../Partials/uploads/' . htmlspecialchars($employee['profile_filename']) : '../Partials/resources/default_profile.png';
     $fullName = $firstname . ' ' . $middlename . ' ' . $surname;
 } else {
     // If no employee data is found, redirect to login page

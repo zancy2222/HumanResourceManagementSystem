@@ -31,7 +31,7 @@ $employee = $result->fetch_assoc();
 if ($employee) {
     $employeeId = htmlspecialchars($employee['employee_id']);
     $fullName = htmlspecialchars($employee['firstname'] . ' ' . $employee['middlename'] . ' ' . $employee['surname']);
-    $profileImage = !empty($employee['profile_filename']) ? '../Admin/Partials/uploads/' . htmlspecialchars($employee['profile_filename']) : '../Admin/Partials/resources/default_profile.png';
+    $profileImage = !empty($employee['profile_filename']) ? '../Partials/uploads/' . htmlspecialchars($employee['profile_filename']) : '../Partials/resources/default_profile.png';
 } else {
     // If no employee data is found, redirect to login page
     header("Location: ../login.php");
