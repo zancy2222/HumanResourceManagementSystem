@@ -394,7 +394,7 @@ $branchesCount = 5;
                         <td><img class='profile-img' src='$profilePicturePath' alt='Profile Image'></td>
                         <td class='actions'>
                             <button class='edit-btn' onclick='openEditModal(" . $row['id'] . ")'>Edit</button>
-<form method='post' action='delete.php' style='display:inline;'>
+<form method='post' action='Partials/delete.php' style='display:inline;'>
                                 <input type='hidden' name='id' value='" . $row['id'] . "'>
                                 <button type='submit' class='delete-btn'>Delete</button>
                             </form>                        </td>
