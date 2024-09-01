@@ -359,6 +359,25 @@ phoneInput.addEventListener('input', function () {
             specialChar.classList.toggle('valid', /[!@#$%^&*(),.?":{}|<>]/.test(value));
             specialChar.classList.toggle('invalid', !/[!@#$%^&*(),.?":{}|<>]/.test(value));
         });
+ // Confirm password validation
+ const form = document.querySelector('.form');
+
+form.addEventListener('submit', function (e) {
+    if (password.value !== confirmPassword.value) {
+        e.preventDefault();
+        alert('Passwords do not match. Please check and try again.');
+    }
+});
+          // Form submission validation
+    document.querySelector('.form').addEventListener('submit', function (event) {
+        const cvUpload = document.getElementById('cv-upload');
+        const profileUpload = document.getElementById('profile-upload');
+
+        if (!cvUpload.files.length || !profileUpload.files.length) {
+            alert('Please upload both your resume and profile picture before submitting the form.');
+            event.preventDefault(); // Prevent form submission
+        }
+    });
     </script>
 </body>
 </html>

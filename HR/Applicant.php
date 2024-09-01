@@ -711,6 +711,7 @@ $branchesCount = 5;
 }
 
 // Function to check if previous step is complete and update
+// Function to check if the user's account is activated and previous step is complete, then update
 function checkAndUpdate(id, status, prevStepIndex) {
     const prevStepCheckbox = document.getElementById(`checkbox-${id}-${prevStepIndex}`);
     const currentCheckbox = document.getElementById(`checkbox-${id}-${prevStepIndex + 1}`);
@@ -718,14 +719,30 @@ function checkAndUpdate(id, status, prevStepIndex) {
     if (!prevStepCheckbox.checked) {
         alert('Previous step is incomplete.');
         currentCheckbox.checked = false;
-    } else {
-        const userConfirmed = confirm('Are you sure you want to check this step?');
-        if (userConfirmed) {
-            updateProgress(id, status);
-        } else {
-            currentCheckbox.checked = false; // Undo the checkbox action
-        }
+        return;
     }
+
+    // Check if the user's account is activated
+    fetch(`Partials/check_activation_status.php?id=${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.activated) {
+                const userConfirmed = confirm('Are you sure you want to check this step?');
+                if (userConfirmed) {
+                    updateProgress(id, status);
+                } else {
+                    currentCheckbox.checked = false; // Undo the checkbox action
+                }
+            } else {
+                alert('This account is not activated. You cannot proceed with this step.');
+                currentCheckbox.checked = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to check activation status: ' + error.message);
+            currentCheckbox.checked = false;
+        });
 }
 
 

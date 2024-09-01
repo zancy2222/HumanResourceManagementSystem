@@ -213,78 +213,77 @@ $employee_result = $conn->query($employee_query);
             <h1 class="welcome-text">Welcome HR <?php echo $fullName; ?></h1>
         </div>
         <?php
-include 'Partials/db_conn.php'; // Include your database connection file
+        include 'Partials/db_conn.php'; // Include your database connection file
 
-// Fetch the count of employees
-$employeeQuery = "SELECT COUNT(*) AS count FROM Employee";
-$employeeResult = $conn->query($employeeQuery);
-$employeeCount = $employeeResult->fetch_assoc()['count'];
+        // Fetch the count of employees
+        $employeeQuery = "SELECT COUNT(*) AS count FROM Employee";
+        $employeeResult = $conn->query($employeeQuery);
+        $employeeCount = $employeeResult->fetch_assoc()['count'];
 
-// Fetch the count of applicants
-$applicantQuery = "SELECT COUNT(*) AS count FROM Applicant";
-$applicantResult = $conn->query($applicantQuery);
-$applicantCount = $applicantResult->fetch_assoc()['count'];
+        // Fetch the count of applicants
+        $applicantQuery = "SELECT COUNT(*) AS count FROM Applicant";
+        $applicantResult = $conn->query($applicantQuery);
+        $applicantCount = $applicantResult->fetch_assoc()['count'];
 
-// Fetch the count of pending leave requests
-$leaveQuery = "SELECT COUNT(*) AS count FROM leave_requests WHERE date_submitted > NOW() - INTERVAL 30 DAY"; // Example condition for recent leave requests
-$leaveResult = $conn->query($leaveQuery);
-$pendingLeaveCount = $leaveResult->fetch_assoc()['count'];
+        // Fetch the count of pending leave requests
+        $leaveQuery = "SELECT COUNT(*) AS count FROM leave_requests WHERE date_submitted > NOW() - INTERVAL 30 DAY"; // Example condition for recent leave requests
+        $leaveResult = $conn->query($leaveQuery);
+        $pendingLeaveCount = $leaveResult->fetch_assoc()['count'];
 
-// Define default branches count
-$branchesCount = 5;
+        // Define default branches count
+        $branchesCount = 5;
 
 
-?>
+        ?>
 
-<div class="status-container">
-    <div class="status-box">
-        <div class="label">Employees</div>
-        <div class="number"><?php echo $employeeCount; ?></div>
-        <div class="icon icon-wrapper">
-            <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/teacher.png" alt="teacher" />
+        <div class="status-container">
+            <div class="status-box">
+                <div class="label">Employees</div>
+                <div class="number"><?php echo $employeeCount; ?></div>
+                <div class="icon icon-wrapper">
+                    <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/teacher.png" alt="teacher" />
+                </div>
+            </div>
+            <div class="status-box">
+                <div class="label">Branches</div>
+                <div class="number"><?php echo $branchesCount; ?></div>
+                <div class="icon icon-wrapper">
+                    <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/school.png" alt="school" />
+                </div>
+            </div>
+            <div class="status-box">
+                <div class="label">Applicants</div>
+                <div class="number"><?php echo $applicantCount; ?></div>
+                <div class="icon icon-wrapper">
+                    <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/open-resume.png" alt="open-resume" />
+                </div>
+            </div>
+            <div class="status-box">
+                <div class="label">Pending Leave</div>
+                <div class="number"><?php echo $pendingLeaveCount; ?></div>
+                <div class="icon icon-wrapper">
+                    <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/leave.png" alt="leave" />
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="status-box">
-        <div class="label">Branches</div>
-        <div class="number"><?php echo $branchesCount; ?></div>
-        <div class="icon icon-wrapper">
-            <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/school.png" alt="school" />
-        </div>
-    </div>
-    <div class="status-box">
-        <div class="label">Applicants</div>
-        <div class="number"><?php echo $applicantCount; ?></div>
-        <div class="icon icon-wrapper">
-            <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/open-resume.png" alt="open-resume" />
-        </div>
-    </div>
-    <div class="status-box">
-        <div class="label">Pending Leave</div>
-        <div class="number"><?php echo $pendingLeaveCount; ?></div>
-        <div class="icon icon-wrapper">
-            <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/leave.png" alt="leave" />
-        </div>
-    </div>
-</div>
         <div class="evaluation-form">
             <h2>Employee Evaluation Form</h2>
             <form method="POST" action="Partials/submit_evaluation.php">
-            <label for="employee-name">Select Employee:</label>
-    <select id="employee-name" name="employee-id" class="dropdown">
-        <?php
-        if ($employee_result->num_rows > 0) {
-            // Output data for each employee
-            while ($row = $employee_result->fetch_assoc()) {
-                $employeeId = htmlspecialchars($row['employee_id']);
-                $fullName = htmlspecialchars($row['full_name']);
-                echo "<option value='$employeeId'>$fullName</option>";
-            }
-        } else {
-            echo "<option value=''>No employees available</option>";
-        }
-        ?>
-    </select>
-
+                <label for="employee-name">Select Employee:</label>
+                <select id="employee-name" name="employee-id" class="dropdown" required>
+                    <?php
+                    if ($employee_result->num_rows > 0) {
+                        // Output data for each employee
+                        while ($row = $employee_result->fetch_assoc()) {
+                            $employeeId = htmlspecialchars($row['employee_id']);
+                            $fullName = htmlspecialchars($row['full_name']);
+                            echo "<option value='$employeeId'>$fullName</option>";
+                        }
+                    } else {
+                        echo "<option value=''>No employees available</option>";
+                    }
+                    ?>
+                </select>
 
                 <table class="evaluation-table">
                     <thead>
@@ -300,76 +299,77 @@ $branchesCount = 5;
                     <tbody>
                         <tr>
                             <td>Professionalism</td>
-                            <td><input type="radio" name="professionalism" value="1"></td>
-                            <td><input type="radio" name="professionalism" value="2"></td>
-                            <td><input type="radio" name="professionalism" value="3"></td>
-                            <td><input type="radio" name="professionalism" value="4"></td>
-                            <td><input type="radio" name="professionalism" value="5"></td>
+                            <td><input type="radio" name="professionalism" value="1" required></td>
+                            <td><input type="radio" name="professionalism" value="2" required></td>
+                            <td><input type="radio" name="professionalism" value="3" required></td>
+                            <td><input type="radio" name="professionalism" value="4" required></td>
+                            <td><input type="radio" name="professionalism" value="5" required></td>
                         </tr>
                         <tr>
                             <td>Use of Technology</td>
-                            <td><input type="radio" name="technology" value="1"></td>
-                            <td><input type="radio" name="technology" value="2"></td>
-                            <td><input type="radio" name="technology" value="3"></td>
-                            <td><input type="radio" name="technology" value="4"></td>
-                            <td><input type="radio" name="technology" value="5"></td>
+                            <td><input type="radio" name="technology" value="1" required></td>
+                            <td><input type="radio" name="technology" value="2" required></td>
+                            <td><input type="radio" name="technology" value="3" required></td>
+                            <td><input type="radio" name="technology" value="4" required></td>
+                            <td><input type="radio" name="technology" value="5" required></td>
                         </tr>
                         <tr>
                             <td>Feedback and Assessment</td>
-                            <td><input type="radio" name="feedback" value="1"></td>
-                            <td><input type="radio" name="feedback" value="2"></td>
-                            <td><input type="radio" name="feedback" value="3"></td>
-                            <td><input type="radio" name="feedback" value="4"></td>
-                            <td><input type="radio" name="feedback" value="5"></td>
+                            <td><input type="radio" name="feedback" value="1" required></td>
+                            <td><input type="radio" name="feedback" value="2" required></td>
+                            <td><input type="radio" name="feedback" value="3" required></td>
+                            <td><input type="radio" name="feedback" value="4" required></td>
+                            <td><input type="radio" name="feedback" value="5" required></td>
                         </tr>
                         <tr>
                             <td>Classroom Management</td>
-                            <td><input type="radio" name="management" value="1"></td>
-                            <td><input type="radio" name="management" value="2"></td>
-                            <td><input type="radio" name="management" value="3"></td>
-                            <td><input type="radio" name="management" value="4"></td>
-                            <td><input type="radio" name="management" value="5"></td>
+                            <td><input type="radio" name="management" value="1" required></td>
+                            <td><input type="radio" name="management" value="2" required></td>
+                            <td><input type="radio" name="management" value="3" required></td>
+                            <td><input type="radio" name="management" value="4" required></td>
+                            <td><input type="radio" name="management" value="5" required></td>
                         </tr>
                         <tr>
                             <td>Subject Knowledge</td>
-                            <td><input type="radio" name="knowledge" value="1"></td>
-                            <td><input type="radio" name="knowledge" value="2"></td>
-                            <td><input type="radio" name="knowledge" value="3"></td>
-                            <td><input type="radio" name="knowledge" value="4"></td>
-                            <td><input type="radio" name="knowledge" value="5"></td>
+                            <td><input type="radio" name="knowledge" value="1" required></td>
+                            <td><input type="radio" name="knowledge" value="2" required></td>
+                            <td><input type="radio" name="knowledge" value="3" required></td>
+                            <td><input type="radio" name="knowledge" value="4" required></td>
+                            <td><input type="radio" name="knowledge" value="5" required></td>
                         </tr>
                         <tr>
                             <td>Teaching Methods</td>
-                            <td><input type="radio" name="methods" value="1"></td>
-                            <td><input type="radio" name="methods" value="2"></td>
-                            <td><input type="radio" name="methods" value="3"></td>
-                            <td><input type="radio" name="methods" value="4"></td>
-                            <td><input type="radio" name="methods" value="5"></td>
+                            <td><input type="radio" name="methods" value="1" required></td>
+                            <td><input type="radio" name="methods" value="2" required></td>
+                            <td><input type="radio" name="methods" value="3" required></td>
+                            <td><input type="radio" name="methods" value="4" required></td>
+                            <td><input type="radio" name="methods" value="5" required></td>
                         </tr>
                         <tr>
                             <td>Student Engagement</td>
-                            <td><input type="radio" name="engagement" value="1"></td>
-                            <td><input type="radio" name="engagement" value="2"></td>
-                            <td><input type="radio" name="engagement" value="3"></td>
-                            <td><input type="radio" name="engagement" value="4"></td>
-                            <td><input type="radio" name="engagement" value="5"></td>
+                            <td><input type="radio" name="engagement" value="1" required></td>
+                            <td><input type="radio" name="engagement" value="2" required></td>
+                            <td><input type="radio" name="engagement" value="3" required></td>
+                            <td><input type="radio" name="engagement" value="4" required></td>
+                            <td><input type="radio" name="engagement" value="5" required></td>
                         </tr>
                         <tr>
                             <td>Communication Skills</td>
-                            <td><input type="radio" name="communication" value="1"></td>
-                            <td><input type="radio" name="communication" value="2"></td>
-                            <td><input type="radio" name="communication" value="3"></td>
-                            <td><input type="radio" name="communication" value="4"></td>
-                            <td><input type="radio" name="communication" value="5"></td>
+                            <td><input type="radio" name="communication" value="1" required></td>
+                            <td><input type="radio" name="communication" value="2" required></td>
+                            <td><input type="radio" name="communication" value="3" required></td>
+                            <td><input type="radio" name="communication" value="4" required></td>
+                            <td><input type="radio" name="communication" value="5" required></td>
                         </tr>
                     </tbody>
                 </table>
 
                 <label for="comments">Additional Comments:</label>
-                <textarea id="comments" name="comments" class="comments-field" rows="4" placeholder="Enter any additional comments..."></textarea>
+                <textarea id="comments" name="comments" class="comments-field" rows="4" placeholder="Enter any additional comments..." required></textarea>
 
                 <button type="submit" class="submit-btn">Submit Evaluation</button>
             </form>
+
         </div>
     </div>
 
