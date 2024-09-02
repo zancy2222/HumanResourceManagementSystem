@@ -90,6 +90,18 @@ $conn->close();
             background-color: #218838;
         }
 
+        .delete-btn{
+            padding: 10px 20px;
+            background-color: darkred;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+
         /* Styling for the table container */
         .table-container {
             margin-top: 50px;
@@ -187,53 +199,59 @@ $conn->close();
 
     <!-- Table to display attachments -->
     <div class="table-container">
-        <h2>Uploaded Attachments</h2>
-        <table class="attachments-table">
-    <thead>
-        <tr>
-            <th>File Name</th>
-            <th>Certificates</th> <!-- Column for image preview -->
-            <th>Upload Date</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        include 'Partials/db_conn.php'; // Reconnect to fetch attachments
+    <h2>Uploaded Attachments</h2>
+    <table class="attachments-table">
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Certificates</th>
+                <th>Upload Date</th>
+                <th>Action</th> <!-- New Action column -->
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            include 'Partials/db_conn.php'; // Reconnect to fetch attachments
 
-        $stmt = $conn->prepare("SELECT file_name, file_path, upload_date FROM Attachments WHERE user_id = ?");
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
+            $stmt = $conn->prepare("SELECT id, file_name, file_path, upload_date FROM Attachments WHERE user_id = ?");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        while ($row = $result->fetch_assoc()) {
-            $file_path = 'uploads/' . $row['file_path'];
-            $file_name = $row['file_name'];
-            $upload_date = $row['upload_date'];
-            
-            // Determine if the file is an image
-            $is_image = in_array(pathinfo($file_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
+            while ($row = $result->fetch_assoc()) {
+                $file_id = $row['id'];
+                $file_path = 'uploads/' . $row['file_path'];
+                $file_name = $row['file_name'];
+                $upload_date = $row['upload_date'];
+                
+                $is_image = in_array(pathinfo($file_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
 
-            echo "<tr>
-                <td>{$file_name}</td>";
+                echo "<tr>
+                    <td>{$file_name}</td>";
 
-            // Display image preview if the file is an image
-            if ($is_image) {
-                echo "<td><img src='{$file_path}' alt='{$file_name}' style='max-width: 300px; height: auto;'></td>";
-            } else {
-                echo "<td>No preview available</td>";
+                if ($is_image) {
+                    echo "<td><img src='{$file_path}' alt='{$file_name}' style='max-width: 300px; height: auto;'></td>";
+                } else {
+                    echo "<td>No preview available</td>";
+                }
+
+                echo "<td>{$upload_date}</td>
+                    <td>
+                        <form action='Partials/delete_attachment.php' method='post' onsubmit='return confirm(\"Are you sure you want to delete this attachment?\");'>
+                            <input type='hidden' name='file_id' value='{$file_id}'>
+                            <button type='submit' class='delete-btn'>Delete</button>
+                        </form>
+                    </td>
+                </tr>";
             }
 
-            echo "<td>{$upload_date}</td>
-            </tr>";
-        }
+            $stmt->close();
+            $conn->close();
+            ?>
+        </tbody>
+    </table>
+</div>
 
-        $stmt->close();
-        $conn->close();
-        ?>
-    </tbody>
-</table>
-
-    </div>
 </div>
 
 <div id="logoutModal" class="modal">

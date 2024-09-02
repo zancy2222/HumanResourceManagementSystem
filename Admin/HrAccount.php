@@ -421,48 +421,52 @@ $branchesCount = 5;
 
     </div>
 
-    <!-- Add Modal -->
-    <div id="addModal" class="form-modal">
-        <div class="form-modal-content">
-            <h2>Add New HR</h2>
-            <form action="Partials/add_HR.php" method="post" enctype="multipart/form-data">
-                <!-- Form fields for adding new employee -->
-                <div class="form-group">
-                    <label for="addFirstName">First Name</label>
-                    <input type="text" id="addFirstName" name="firstName" required>
-                </div>
-                <div class="form-group">
-                    <label for="addMiddleName">Middle Name</label>
-                    <input type="text" id="addMiddleName" name="middleName">
-                </div>
-                <div class="form-group">
-                    <label for="addLastName">Last Name</label>
-                    <input type="text" id="addLastName" name="lastName" required>
-                </div>
-                <div class="form-group">
-                    <label for="addEmail">Email Address</label>
-                    <input type="email" id="addEmail" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="addAge">Age</label>
-                    <input type="number" id="addAge" name="age" required>
-                </div>
-                <div class="form-group">
-                    <label for="addPassword">Password</label>
-                    <input type="password" id="addPassword" name="password" required>
-                </div>
-                <div class="form-group">
-                    <label class="file-label" for="addProfilePicture">Profile Picture</label>
-                    <input type="file" id="addProfilePicture" name="profilePicture">
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="save-btn">Save</button>
-                    <button type="button" class="cancel-btn" onclick="closeAddModal()">Cancel</button>
-                </div>
-            </form>
-
-        </div>
+<!-- Add Modal -->
+<div id="addModal" class="form-modal">
+    <div class="form-modal-content">
+        <h2>Add New HR</h2>
+        <form onsubmit="return validateForm()" action="Partials/add_HR.php" method="post" enctype="multipart/form-data">
+            <!-- Form fields for adding new employee -->
+            <div class="form-group">
+                <label for="addFirstName">First Name</label>
+                <input type="text" id="addFirstName" name="firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="addMiddleName">Middle Name</label>
+                <input type="text" id="addMiddleName" name="middleName" required>
+            </div>
+            <div class="form-group">
+                <label for="addLastName">Last Name</label>
+                <input type="text" id="addLastName" name="lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="addEmail">Email Address</label>
+                <input type="email" id="addEmail" name="email" pattern="[a-zA-Z0-9._%+-]+@gmail\.com" required>
+                <small>Must be a valid Gmail address (e.g., example@gmail.com)</small>
+            </div>
+            <div class="form-group">
+                <label for="addAge">Age</label>
+                <input type="number" id="addAge" name="age" required>
+            </div>
+            <div class="form-group">
+                <label for="addPassword">Password</label>
+                <input type="password" id="addPassword" name="password" 
+                       pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}" 
+                       title="Must contain at least 8 characters, including 1 uppercase letter, 1 number, and 1 special character" 
+                       required>
+                <small>Password must be at least 8 characters long, include 1 uppercase letter, 1 number, and 1 special character.</small>
+            </div>
+            <div class="form-group">
+                <label class="file-label" for="addProfilePicture">Profile Picture</label>
+                <input type="file" id="addProfilePicture" name="profilePicture" required>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="save-btn">Save</button>
+                <button type="button" class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+            </div>
+        </form>
     </div>
+</div>
 
     <!-- Edit Modal -->
     <div id="editModal" class="form-modal">
@@ -516,6 +520,53 @@ $branchesCount = 5;
             <button class="modal-btn cancel-btn" onclick="closeModal()">Cancel</button>
         </div>
     </div>
+    <script>
+    function validateForm() {
+        const email = document.getElementById('addEmail').value;
+        const password = document.getElementById('addPassword').value;
+
+        // Email validation: must end with @gmail.com
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        if (!emailPattern.test(email)) {
+            alert("Email must be a valid Gmail address (e.g., example@gmail.com).");
+            return false;
+        }
+
+        // Password validation: minimum 8 characters, 1 special character, 1 number, 1 uppercase letter
+        const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!passwordPattern.test(password)) {
+            if (password.length < 8) {
+                alert("Password must be at least 8 characters long.");
+            } else if (!/[A-Z]/.test(password)) {
+                alert("Password must contain at least one uppercase letter.");
+            } else if (!/\d/.test(password)) {
+                alert("Password must contain at least one number.");
+            } else if (!/[\W_]/.test(password)) {
+                alert("Password must contain at least one special character.");
+            }
+            return false;
+        }
+
+        return true; // Allow form submission if all validations pass
+    }
+
+    function openAddModal() {
+        document.getElementById('addModal').style.display = 'block';
+    }
+
+    function closeAddModal() {
+        document.getElementById('addModal').style.display = 'none';
+    }
+
+    function openEditModal() {
+        document.getElementById('editModal').style.display = 'block';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+</script>
+
     <script>
         function confirmLogout() {
             document.getElementById('logoutModal').style.display = 'block';

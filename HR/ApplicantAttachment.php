@@ -289,6 +289,71 @@ $conn->close();
     color: #538392;
     margin: 0;
 }
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 60px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+}
+
+/* Modal Content (image) */
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+}
+
+/* Caption of Modal Image */
+#caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    height: 150px;
+}
+
+/* Add Animation - Zoom in the Modal */
+.modal-content, #caption { 
+    animation-name: zoom;
+    animation-duration: 0.6s;
+}
+
+@keyframes zoom {
+    from {transform:scale(0)} 
+    to {transform:scale(1)}
+}
+
+/* The Close Button */
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
     </style>
 </head>
 <body>
@@ -433,26 +498,28 @@ $branchesCount = 5;
             </tr>
         </thead>
         <tbody>
-            <?php
-            if ($result->num_rows > 0) {
-                // Output data for each row
-                while ($row = $result->fetch_assoc()) {
-                    $fullName = htmlspecialchars($row['firstname'] . ' ' . $row['middlename'] . ' ' . $row['surname']);
-                    $filePath = htmlspecialchars($row['file_path']);
-                    $uploadDate = htmlspecialchars($row['upload_date']);
+    <?php
+    if ($result->num_rows > 0) {
+        // Output data for each row
+        while ($row = $result->fetch_assoc()) {
+            $fullName = htmlspecialchars($row['firstname'] . ' ' . $row['middlename'] . ' ' . $row['surname']);
+            $filePath = htmlspecialchars($row['file_path']);
+            $uploadDate = htmlspecialchars($row['upload_date']);
+            $imageSrc = "../Applicant/uploads/$filePath"; // Image source path
 
-                    echo "<tr>
-                            <td>$fullName</td>
-                            <td><img src='../Applicant/uploads/$filePath'  style='max-width: 100px; height: auto;'></td> <!-- Display image -->
-                            <td>$uploadDate</td>
-                            <td><a href='$filePath' download>Download</a></td> <!-- Link to download the file -->
-                        </tr>";
-                }
-            } else {
-                echo "<tr><td colspan='5'>No records found</td></tr>";
-            }
-            ?>
-        </tbody>
+            echo "<tr>
+                    <td>$fullName</td>
+                    <td><img src='$imageSrc' style='max-width: 100px; height: auto;'></td> <!-- Display image -->
+                    <td>$uploadDate</td>
+                    <td><a href='#' class='preview-link' data-src='$imageSrc'>Preview</a></td> <!-- Link to preview the file -->
+                </tr>";
+        }
+    } else {
+        echo "<tr><td colspan='5'>No records found</td></tr>";
+    }
+    ?>
+</tbody>
+
     </table>
 
     <div class="pagination">
@@ -464,6 +531,11 @@ $branchesCount = 5;
     </div>
 </div>
 
+<!-- Modal Structure -->
+<div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="fullImage">
+</div>
 
 
     </div>
@@ -476,7 +548,38 @@ $branchesCount = 5;
             <button class="modal-btn cancel-btn" onclick="closeModal()">Cancel</button>
         </div>
     </div>
+<script>
+    // Get the modal
+var modal = document.getElementById("imageModal");
 
+// Get the image and insert it inside the modal
+var modalImg = document.getElementById("fullImage");
+var previewLinks = document.querySelectorAll('.preview-link');
+
+previewLinks.forEach(link => {
+    link.onclick = function(e) {
+        e.preventDefault();
+        modal.style.display = "block";
+        modalImg.src = this.dataset.src;
+    };
+});
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() { 
+    modal.style.display = "none";
+};
+
+// Close the modal when clicking outside of the image
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+</script>
 
 </body>
 </html>

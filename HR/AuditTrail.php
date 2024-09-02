@@ -468,6 +468,37 @@ $branchesCount = 5;
             <button>Next &raquo;</button>
         </div>
     </div>
+    <div class="table-container">
+    <div class="shortlisted-applicant">
+        <h2>Leave Requests</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Employee ID</th>
+                <th>Leave Type</th>
+                <th>Leave Reason</th>
+                <th>Leave Date</th>
+                <th>Date Submitted</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            // Fetch and display leave requests data
+            $leaveStmt = $conn->query("SELECT * FROM leave_requests");
+            while ($leaveRequest = $leaveStmt->fetch_assoc()) {
+                echo "<tr>
+                        <td>{$leaveRequest['employee_id']}</td>
+                        <td>{$leaveRequest['leave_type']}</td>
+                        <td>{$leaveRequest['leave_reason']}</td>
+                        <td>{$leaveRequest['leave_date']}</td>
+                        <td>{$leaveRequest['date_submitted']}</td>
+                      </tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
 
     <!-- Applicant Details -->
     <div class="table-container">

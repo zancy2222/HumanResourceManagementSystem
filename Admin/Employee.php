@@ -425,7 +425,7 @@ $branchesCount = 5;
 <div id="addModal" class="form-modal">
     <div class="form-modal-content">
         <h2>Add New Employee</h2>
-        <form action="Partials/add_Employee.php" method="post" enctype="multipart/form-data">
+        <form action="Partials/add_Employee.php" onsubmit="return validateEmployeeForm()" method="post" enctype="multipart/form-data">
             <!-- User Details -->
             <h3>User Details</h3>
             <div class="form-group">
@@ -553,6 +553,44 @@ $branchesCount = 5;
             <button class="modal-btn cancel-btn" onclick="closeModal()">Cancel</button>
         </div>
     </div>
+    <script>
+    function validateEmployeeForm() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const phone = document.getElementById('phone').value;
+
+        // Email validation: must end with @gmail.com
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        if (!emailPattern.test(email)) {
+            alert("Email must be a valid Gmail address (e.g., example@gmail.com).");
+            return false;
+        }
+
+        // Password validation: minimum 8 characters, 1 special character, 1 number, 1 uppercase letter
+        const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!passwordPattern.test(password)) {
+            if (password.length < 8) {
+                alert("Password must be at least 8 characters long.");
+            } else if (!/[A-Z]/.test(password)) {
+                alert("Password must contain at least one uppercase letter.");
+            } else if (!/\d/.test(password)) {
+                alert("Password must contain at least one number.");
+            } else if (!/[\W_]/.test(password)) {
+                alert("Password must contain at least one special character.");
+            }
+            return false;
+        }
+
+        // Phone validation: must be exactly 11 digits and contain only numbers
+        const phonePattern = /^\d{11}$/;
+        if (!phonePattern.test(phone)) {
+            alert("Phone number must be exactly 11 digits and contain only numbers.");
+            return false;
+        }
+
+        return true; // Allow form submission if all validations pass
+    }
+</script>
     <script>
         function confirmLogout() {
             document.getElementById('logoutModal').style.display = 'block';
