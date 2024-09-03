@@ -40,50 +40,95 @@ if (isset($_POST['action']) && isset($_POST['resignation_id']) && isset($_POST['
     if ($action === 'approve') {
         $subject = "Resignation Approved";
         $body = "Your resignation has been approved.";
+        
+        // Approve action - delete from Employee and Users tables
+        $deleteEmployeeStmt = $conn->prepare("DELETE FROM Employee WHERE employee_id = (SELECT employee_id FROM Resignations WHERE id = ?)");
+        $deleteEmployeeStmt->bind_param("i", $resignationId);
+        
+        $deleteUserStmt = $conn->prepare("DELETE FROM Users WHERE id = (SELECT user_id FROM ArchiveApplicant WHERE id = (SELECT archive_applicant_id FROM Employee WHERE employee_id = (SELECT employee_id FROM Resignations WHERE id = ?)))");
+        $deleteUserStmt->bind_param("i", $resignationId);
+
+        if ($deleteEmployeeStmt->execute() && $deleteUserStmt->execute()) {
+            $stmt = $conn->prepare("DELETE FROM Resignations WHERE id = ?");
+            $stmt->bind_param("i", $resignationId);
+            if ($stmt->execute()) {
+                // Send email notification
+                $mail = new PHPMailer(true);
+                try {
+                    // Server settings
+                    $mail->isSMTP();
+                    $mail->Host       = 'smtp.gmail.com';
+                    $mail->SMTPAuth   = true;
+                    $mail->Username   = 'danielzanbaltazar.forwork@gmail.com'; // Change this to your email
+                    $mail->Password   = 'nqzk mmww mxin ikve'; // Change this to your email password
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                    $mail->Port       = 587;
+
+                    // Recipients
+                    $mail->setFrom('danielzanbaltazar.forwork@gmail.com', 'HR Department');
+                    $mail->addAddress($employeeEmail);
+
+                    // Content
+                    $mail->isHTML(true);
+                    $mail->Subject = $subject;
+                    $mail->Body    = $body;
+
+                    // Send email
+                    $mail->send();
+                    header("Location: Resign.php");
+                    exit();
+                } catch (Exception $e) {
+                    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+                }
+            } else {
+                echo 'Error: Could not delete resignation record.';
+            }
+            $stmt->close();
+        } else {
+            echo 'Error: Could not delete Employee or User record.';
+        }
+        $deleteEmployeeStmt->close();
+        $deleteUserStmt->close();
     } elseif ($action === 'delete') {
         $subject = "Resignation Declined";
         $body = "Your resignation has been declined.";
-    }
 
-    // Send email notification
-    $mail = new PHPMailer(true);
-    try {
-        // Server settings
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = 'danielzanbaltazar.forwork@gmail.com'; // Change this to your email
-        $mail->Password   = 'nqzk mmww mxin ikve'; // Change this to your email password
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+        // Send email notification
+        $mail = new PHPMailer(true);
+        try {
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'danielzanbaltazar.forwork@gmail.com'; // Change this to your email
+            $mail->Password   = 'nqzk mmww mxin ikve'; // Change this to your email password
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
 
-        // Recipients
-        $mail->setFrom('danielzanbaltazar.forwork@gmail.com', 'HR Department');
-        $mail->addAddress($employeeEmail);
+            // Recipients
+            $mail->setFrom('danielzanbaltazar.forwork@gmail.com', 'HR Department');
+            $mail->addAddress($employeeEmail);
 
-        // Content
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body    = $body;
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body    = $body;
 
-        // Send email and then delete the record
-        if ($mail->send()) {
-            if ($action === 'delete') {
-                $stmt = $conn->prepare("DELETE FROM Resignations WHERE id = ?");
-                $stmt->bind_param("i", $resignationId);
-                if ($stmt->execute()) {
-                    header("Location: Resign.php");
-                    exit();
-                } else {
-                    echo 'Error: Could not delete resignation record.';
-                }
-                $stmt->close();
+            // Send email
+            $mail->send();
+            // Delete resignation record
+            $stmt = $conn->prepare("DELETE FROM Resignations WHERE id = ?");
+            $stmt->bind_param("i", $resignationId);
+            if ($stmt->execute()) {
+                header("Location: Resign.php");
+                exit();
+            } else {
+                echo 'Error: Could not delete resignation record.';
             }
-        } else {
-            echo 'Error: Message could not be sent. Mailer Error: ' . $mail->ErrorInfo;
+            $stmt->close();
+        } catch (Exception $e) {
+            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
         }
-    } catch (Exception $e) {
-        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
     }
 }
 
@@ -98,7 +143,8 @@ $stmt = $conn->prepare("
 ");
 $stmt->execute();
 $result = $stmt->get_result();
-?> 
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

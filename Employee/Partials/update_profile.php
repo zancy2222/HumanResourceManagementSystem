@@ -39,6 +39,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "Error uploading resume. Please try again.";
             exit();
         }
+    } else {
+        // If no new CV is uploaded, fetch the existing CV filename from the database
+        $stmt = $conn->prepare("
+            SELECT u.cv_filename 
+            FROM Users u 
+            JOIN Employee e ON u.id = e.archive_applicant_id 
+            WHERE u.email = ?
+        ");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->bind_result($existingCvFilename);
+        $stmt->fetch();
+        $stmt->close();
+        
+        // Use the existing CV filename
+        $cvFilename = $existingCvFilename;
     }
 
     // Update profile in the database
@@ -52,11 +68,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($stmt->execute()) {
         // Profile updated successfully
-        // If the user is an employee, redirect to Employee/index.php
         header("Location: ../Profile.php");
     } else {
         // Error updating profile
         echo "Error updating profile. Please try again.";
     }
+
+    $stmt->close();
+    $conn->close();
 }
 ?>

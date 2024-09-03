@@ -162,7 +162,7 @@ if (!$user) {
     <div class="content">
     <h1 class="page-text">Profile Overview</h1>
 
-    <form class="profile-form" action="Partials/update_profile.php" method="post" enctype="multipart/form-data">
+    <form class="profile-form" action="Partials/update_profile.php" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
         <label for="firstname">First Name:</label>
         <input type="text" id="firstname" name="firstname" value="<?php echo htmlspecialchars($user['firstname']); ?>">
 
@@ -232,6 +232,53 @@ if (!$user) {
         function logout() {
             window.location.href = '../login.php';
         
+        }
+        
+    </script>
+
+<script>
+        function validateForm() {
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const cv = document.getElementById('cv').files[0];
+            const profileImage = document.getElementById('profile-image').files[0];
+            const password = document.getElementById('password').value;
+            
+            // Email validation: must be a valid email address
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                alert("Please enter a valid email address.");
+                return false;
+            }
+
+            // Phone number validation: must be 10 digits
+            const phonePattern = /^\d{11}$/;
+            if (!phonePattern.test(phone)) {
+                alert("Phone number must be 11 digits long.");
+                return false;
+            }
+
+            // File type validation: Check CV and profile image file types
+            if (cv && !cv.name.endsWith('.pdf')) {
+                alert("CV must be a PDF file.");
+                return false;
+            }
+            if (profileImage && !profileImage.type.startsWith('image/')) {
+                alert("Profile image must be an image file.");
+                return false;
+            }
+
+            // Password validation if provided
+            if (password) {
+                const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+                if (!passwordPattern.test(password)) {
+                    alert("Password must be at least 8 characters long, include 1 uppercase letter, 1 number, and 1 special character.");
+                    return false;
+                }
+            }
+
+            // Confirmation dialog
+            return confirm("Are you sure you want to update your profile?");
         }
     </script>
 </body>

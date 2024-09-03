@@ -34,7 +34,6 @@ if ($employee) {
     header("Location: ../login.php");
     exit();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -155,6 +154,57 @@ if ($employee) {
         table tbody tr:hover {
             background-color: #f9f9f9;
         }
+        .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 60px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+    }
+
+    /* Modal Content (image) */
+    .modal-content {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 700px;
+    }
+
+    /* Add Animation - Zoom in the Modal */
+    .modal-content { 
+        animation-name: zoom;
+        animation-duration: 0.6s;
+    }
+
+    @keyframes zoom {
+        from {transform:scale(0)} 
+        to {transform:scale(1)}
+    }
+
+    /* The Close Button */
+    .close {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #f1f1f1;
+        font-size: 40px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: #bbb;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
     </style>
 </head>
 
@@ -254,66 +304,81 @@ $branchesCount = 5;
 
 </div>
 
-        <div class="upload-form">
-        <h2>Upload Attachments</h2>
-        <form action="Partials/save_attachment.php" method="POST" enctype="multipart/form-data">
-            <input type="file" name="attachment" required>
-            <button type="submit">Upload</button>
-        </form>
-    </div>
+<div class="upload-form">
+    <h2>Upload Attachments</h2>
+    <form action="Partials/save_attachment.php" method="POST" enctype="multipart/form-data">
+        <input type="file" name="attachment" required>
+        <button type="submit">Upload</button>
+    </form>
+</div>
 
-     <!-- Table to display attachments -->
-     <div class="table-container">
-        <h2>Uploaded Attachments</h2>
-        <table class="attachments-table">
-            <thead>
-                <tr>
-                    <th>File Name</th>
-                    <th>Certificates</th> <!-- Column for image preview -->
-                    <th>Upload Date</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php
-include 'Partials/db_conn.php'; // Reconnect to fetch attachments
+<!-- Table to display attachments -->
+<div class="table-container">
+    <h2>Uploaded Attachments</h2>
+    <table class="attachments-table">
+    <thead>
+        <tr>
+            <th>File Name</th>
+            <th>Image</th>
+            <th>Upload Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php
+    // Assuming you have the correct employee_id from the session or previous query
+    $employee_id = htmlspecialchars($employeeId);
 
-// Assuming you have the correct employee_id from the session or previous query
-$employee_id = htmlspecialchars($employeeId); // Or get it from session if not already done
+    $stmt = $conn->prepare("SELECT id, file_name, file_path, upload_date FROM AttachedFileEmployee WHERE employee_id = ?");
+    $stmt->bind_param("s", $employee_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-$stmt = $conn->prepare("SELECT file_name, file_path, upload_date FROM AttachedFileEmployee WHERE employee_id = ?");
-$stmt->bind_param("s", $employee_id);
-$stmt->execute();
-$result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $file_id = htmlspecialchars($row['id']);
+        $file_path = 'uploads/' . htmlspecialchars($row['file_path']);
+        $file_name = htmlspecialchars($row['file_name']);
+        $upload_date = htmlspecialchars($row['upload_date']);
+        $is_image = in_array(pathinfo($file_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
 
-while ($row = $result->fetch_assoc()) {
-    $file_path = 'uploads/' . $row['file_path'];
-    $file_name = $row['file_name'];
-    $upload_date = $row['upload_date'];
+        echo "<tr>
+            <td>{$file_name}</td>";
 
-    // Determine if the file is an image
-    $is_image = in_array(pathinfo($file_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
+        // Display the actual image or a placeholder if not an image
+        if ($is_image) {
+            echo "<td><img src='{$file_path}' alt='{$file_name}' style='width: 100px; height: auto;'></td>";
+        } else {
+            echo "<td>No image available</td>";
+        }
 
-    echo "<tr>
-        <td>{$file_name}</td>";
+        echo "<td>{$upload_date}</td>
+            <td>";
 
-    // Display image preview if the file is an image
-    if ($is_image) {
-        echo "<td><img src='{$file_path}' alt='{$file_name}' style='max-width: 150px; height: auto;'></td>";
-    } else {
-        echo "<td>No preview available</td>";
+        // Preview option in the Actions column if the file is an image
+        if ($is_image) {
+            echo "<a href='#' class='preview-link' data-src='{$file_path}'>Preview</a> | ";
+        }
+
+        // Delete link
+        echo "<a href='#' class='delete-link' data-id='{$file_id}'>Delete</a>";
+
+        echo "</td></tr>";
     }
 
-    echo "<td>{$upload_date}</td>
-    </tr>";
-}
+    $stmt->close();
+    $conn->close();
+    ?>
+    </tbody>
+</table>
 
-$stmt->close();
-$conn->close();
-?>
+</div>
 
-            </tbody>
-        </table>
-    </div>
+<!-- Modal Structure -->
+<div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="fullImage">
+</div>
+
 
     </div>
 
@@ -338,7 +403,50 @@ $conn->close();
         }
     </script>
 
+<script>
+    // Get the modal
+    var modal = document.getElementById("imageModal");
 
+    // Get the image and insert it inside the modal
+    var modalImg = document.getElementById("fullImage");
+    var previewLinks = document.querySelectorAll('.preview-link');
+
+    previewLinks.forEach(link => {
+        link.onclick = function(e) {
+            e.preventDefault();
+            modal.style.display = "block";
+            modalImg.src = this.dataset.src;
+        };
+    });
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() { 
+        modal.style.display = "none";
+    };
+
+    // Close the modal when clicking outside of the image
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // Delete link confirmation
+    var deleteLinks = document.querySelectorAll('.delete-link');
+
+    deleteLinks.forEach(link => {
+        link.onclick = function(e) {
+            e.preventDefault();
+            var fileId = this.dataset.id;
+            if (confirm("Are you sure you want to delete this file?")) {
+                window.location.href = 'Partials/delete_attachment.php?id=' + fileId;
+            }
+        };
+    });
+</script>
 </body>
 
 </html>

@@ -124,6 +124,12 @@ if (isset($_GET['id']) && isset($_GET['status'])) {
 
                         $insert_stmt->close();
 
+                        // Delete records from Attachments table
+                        $delete_attachments_stmt = $conn->prepare("DELETE FROM Attachments WHERE user_id = (SELECT user_id FROM Applicant WHERE id = ?)");
+                        $delete_attachments_stmt->bind_param("i", $applicant_id);
+                        $delete_attachments_stmt->execute();
+                        $delete_attachments_stmt->close();
+
                         // Delete from Applicant table
                         $delete_stmt = $conn->prepare("DELETE FROM Applicant WHERE id = ?");
                         $delete_stmt->bind_param("i", $applicant_id);

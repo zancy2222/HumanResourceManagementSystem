@@ -17,15 +17,24 @@ $phone = $_POST['phone'];
 $subject = $_POST['subject'];
 $experience = $_POST['experience'];
 
-// Handle file uploads
+// Fetch current user data
+$stmt = $conn->prepare("SELECT cv_filename, profile_filename FROM Users WHERE email = ?");
+$stmt->bind_param("s", $_SESSION['email']);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+
 $cv_filename = $user['cv_filename'];
+$profile_filename = $user['profile_filename'];
+
+// Handle CV upload
 if (!empty($_FILES['cv']['name'])) {
     $cv_filename = basename($_FILES['cv']['name']);
     $cv_target = "../../Partials/uploads/" . $cv_filename;
     move_uploaded_file($_FILES['cv']['tmp_name'], $cv_target);
 }
 
-$profile_filename = $user['profile_filename'];
+// Handle Profile Image upload
 if (!empty($_FILES['profile-image']['name'])) {
     $profile_filename = basename($_FILES['profile-image']['name']);
     $profile_target = "../../Partials/uploads/" . $profile_filename;

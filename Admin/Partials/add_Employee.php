@@ -29,6 +29,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         move_uploaded_file($_FILES['profile_filename']['tmp_name'], '../../Partials/uploads/' . $profile_filename);
     }
 
+    // Check for existing email and phone in Users and hr_members tables
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM Users WHERE email = ? OR phone = ?");
+    $stmt->bind_param("ss", $email, $phone);
+    $stmt->execute();
+    $stmt->bind_result($user_count);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM hr_members WHERE email = ? OR phone = ?");
+    $stmt->bind_param("ss", $email, $phone);
+    $stmt->execute();
+    $stmt->bind_result($hr_member_count);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($user_count > 0 || $hr_member_count > 0) {
+        echo '<script>alert("Email or Phone already exists."); window.history.back();</script>';
+        exit();
+    }
+
+    // Check for existing employee ID
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM Employee WHERE employee_id = ?");
+    $stmt->bind_param("s", $employee_id);
+    $stmt->execute();
+    $stmt->bind_result($employee_id_count);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($employee_id_count > 0) {
+        echo '<script>alert("Employee ID already exists."); window.history.back();</script>';
+        exit();
+    }
+
     // Insert into Users table
     $stmt = $conn->prepare("INSERT INTO Users (firstname, middlename, surname, email, phone, password, subject, experience, cv_filename, profile_filename, activation_token, activated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
     $stmt->bind_param("sssssssssss", $firstname, $middlename, $surname, $email, $phone, $password, $subject, $experience, $cv_filename, $profile_filename, $activation_token);
@@ -52,13 +85,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 header("Location: ../Employee.php"); // Redirect to the main page after update
                 exit();
             } else {
-                echo 'Error: Could not insert employee record.';
+                echo '<script>alert("Error: Could not insert employee record."); window.history.back();</script>';
             }
         } else {
-            echo 'Error: Could not insert archive applicant record.';
+            echo '<script>alert("Error: Could not insert archive applicant record."); window.history.back();</script>';
         }
     } else {
-        echo 'Error: Could not insert user record.';
+        echo '<script>alert("Error: Could not insert user record."); window.history.back();</script>';
     }
 
     $stmt->close();

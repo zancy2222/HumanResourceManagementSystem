@@ -279,7 +279,7 @@ $result = $conn->query($query);
         </a>
         <a href="Employee.php">
             <div class="nav-item" data-tooltip="Add Employee">
-                <img width="96" height="96" src="https://img.icons8.com/?size=100&id=19943&format=png&color=000000" alt="Applicant"/>
+                <img width="96" height="96" src="https://img.icons8.com/?size=100&id=19943&format=png&color=000000" alt="Applicant" />
             </div>
         </a>
         <a href="AuditTrail.php">
@@ -299,59 +299,59 @@ $result = $conn->query($query);
     <div class="content">
         <h1 class="page text">Dashboard Overview</h1>
         <?php
-include 'Partials/db_conn.php'; // Include your database connection file
+        include 'Partials/db_conn.php'; // Include your database connection file
 
-// Fetch the count of employees
-$employeeQuery = "SELECT COUNT(*) AS count FROM Employee";
-$employeeResult = $conn->query($employeeQuery);
-$employeeCount = $employeeResult->fetch_assoc()['count'];
+        // Fetch the count of employees
+        $employeeQuery = "SELECT COUNT(*) AS count FROM Employee";
+        $employeeResult = $conn->query($employeeQuery);
+        $employeeCount = $employeeResult->fetch_assoc()['count'];
 
-// Fetch the count of applicants
-$applicantQuery = "SELECT COUNT(*) AS count FROM Applicant";
-$applicantResult = $conn->query($applicantQuery);
-$applicantCount = $applicantResult->fetch_assoc()['count'];
+        // Fetch the count of applicants
+        $applicantQuery = "SELECT COUNT(*) AS count FROM Applicant";
+        $applicantResult = $conn->query($applicantQuery);
+        $applicantCount = $applicantResult->fetch_assoc()['count'];
 
-// Fetch the count of pending leave requests
-$leaveQuery = "SELECT COUNT(*) AS count FROM leave_requests WHERE date_submitted > NOW() - INTERVAL 30 DAY"; // Example condition for recent leave requests
-$leaveResult = $conn->query($leaveQuery);
-$pendingLeaveCount = $leaveResult->fetch_assoc()['count'];
+        // Fetch the count of pending leave requests
+        $leaveQuery = "SELECT COUNT(*) AS count FROM leave_requests WHERE date_submitted > NOW() - INTERVAL 30 DAY"; // Example condition for recent leave requests
+        $leaveResult = $conn->query($leaveQuery);
+        $pendingLeaveCount = $leaveResult->fetch_assoc()['count'];
 
-// Define default branches count
-$branchesCount = 5;
+        // Define default branches count
+        $branchesCount = 5;
 
 
-?>
+        ?>
 
-<div class="status-container">
-    <div class="status-box">
-        <div class="label">Employees</div>
-        <div class="number"><?php echo $employeeCount; ?></div>
-        <div class="icon icon-wrapper">
-            <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/teacher.png" alt="teacher" />
+        <div class="status-container">
+            <div class="status-box">
+                <div class="label">Employees</div>
+                <div class="number"><?php echo $employeeCount; ?></div>
+                <div class="icon icon-wrapper">
+                    <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/teacher.png" alt="teacher" />
+                </div>
+            </div>
+            <div class="status-box">
+                <div class="label">Branches</div>
+                <div class="number"><?php echo $branchesCount; ?></div>
+                <div class="icon icon-wrapper">
+                    <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/school.png" alt="school" />
+                </div>
+            </div>
+            <div class="status-box">
+                <div class="label">Applicants</div>
+                <div class="number"><?php echo $applicantCount; ?></div>
+                <div class="icon icon-wrapper">
+                    <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/open-resume.png" alt="open-resume" />
+                </div>
+            </div>
+            <div class="status-box">
+                <div class="label">Pending Leave</div>
+                <div class="number"><?php echo $pendingLeaveCount; ?></div>
+                <div class="icon icon-wrapper">
+                    <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/leave.png" alt="leave" />
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="status-box">
-        <div class="label">Branches</div>
-        <div class="number"><?php echo $branchesCount; ?></div>
-        <div class="icon icon-wrapper">
-            <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/school.png" alt="school" />
-        </div>
-    </div>
-    <div class="status-box">
-        <div class="label">Applicants</div>
-        <div class="number"><?php echo $applicantCount; ?></div>
-        <div class="icon icon-wrapper">
-            <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/open-resume.png" alt="open-resume" />
-        </div>
-    </div>
-    <div class="status-box">
-        <div class="label">Pending Leave</div>
-        <div class="number"><?php echo $pendingLeaveCount; ?></div>
-        <div class="icon icon-wrapper">
-            <img width="30" height="30" src="https://img.icons8.com/ios/50/c44100/leave.png" alt="leave" />
-        </div>
-    </div>
-</div>
 
         <!-- Table Container -->
         <div class="table-container">
@@ -380,25 +380,22 @@ $branchesCount = 5;
                             $fullName = htmlspecialchars($row['first_name'] . ' ' . $row['middle_name'] . ' ' . $row['last_name']);
                             $email = htmlspecialchars($row['email']);
                             $age = htmlspecialchars($row['age']);
-                            $password = htmlspecialchars($row['password']); // Display masked password
                             $profilePicture = !empty($row['profile_picture']) ? htmlspecialchars($row['profile_picture']) : 'resources/default profile.png';
 
                             // Ensure profile picture path is correct
                             $profilePicturePath = 'Partials/' . $profilePicture;
 
                             echo "<tr>
-                        <td>$fullName</td>
-                        <td>$email</td>
-                        <td>$age</td>
-                        <td>••••••••</td> <!-- Masked password for security reasons -->
-                        <td><img class='profile-img' src='$profilePicturePath' alt='Profile Image'></td>
-                        <td class='actions'>
-                            <button class='edit-btn' onclick='openEditModal(" . $row['id'] . ")'>Edit</button>
-<form method='post' action='Partials/delete.php' style='display:inline;'>
-                                <input type='hidden' name='id' value='" . $row['id'] . "'>
-                                <button type='submit' class='delete-btn'>Delete</button>
-                            </form>                        </td>
-                    </tr>";
+                    <td>$fullName</td>
+                    <td>$email</td>
+                    <td>$age</td>
+                    <td>••••••••</td> <!-- Masked password for security reasons -->
+                    <td><img class='profile-img' src='$profilePicturePath' alt='Profile Image'></td>
+                    <td class='actions'>
+                        <button class='edit-btn' onclick='openEditModal(" . $row['id'] . ")'>Edit</button>
+                        <button class='delete-btn' onclick='confirmDelete(event, " . $row['id'] . ")'>Delete</button>
+                    </td>
+                </tr>";
                         }
                     } else {
                         echo "<tr><td colspan='6'>No records found</td></tr>";
@@ -408,6 +405,7 @@ $branchesCount = 5;
                     $conn->close();
                     ?>
                 </tbody>
+
             </table>
 
             <div class="pagination">
@@ -421,58 +419,58 @@ $branchesCount = 5;
 
     </div>
 
-<!-- Add Modal -->
-<div id="addModal" class="form-modal">
-    <div class="form-modal-content">
-        <h2>Add New HR</h2>
-        <form onsubmit="return validateForm()" action="Partials/add_HR.php" method="post" enctype="multipart/form-data">
-            <!-- Form fields for adding new employee -->
-            <div class="form-group">
-                <label for="addFirstName">First Name</label>
-                <input type="text" id="addFirstName" name="firstName" required>
-            </div>
-            <div class="form-group">
-                <label for="addMiddleName">Middle Name</label>
-                <input type="text" id="addMiddleName" name="middleName" required>
-            </div>
-            <div class="form-group">
-                <label for="addLastName">Last Name</label>
-                <input type="text" id="addLastName" name="lastName" required>
-            </div>
-            <div class="form-group">
-                <label for="addEmail">Email Address</label>
-                <input type="email" id="addEmail" name="email" pattern="[a-zA-Z0-9._%+-]+@gmail\.com" required>
-                <small>Must be a valid Gmail address (e.g., example@gmail.com)</small>
-            </div>
-            <div class="form-group">
-                <label for="addAge">Age</label>
-                <input type="number" id="addAge" name="age" required>
-            </div>
-            <div class="form-group">
-                <label for="addPassword">Password</label>
-                <input type="password" id="addPassword" name="password" 
-                       pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}" 
-                       title="Must contain at least 8 characters, including 1 uppercase letter, 1 number, and 1 special character" 
-                       required>
-                <small>Password must be at least 8 characters long, include 1 uppercase letter, 1 number, and 1 special character.</small>
-            </div>
-            <div class="form-group">
-                <label class="file-label" for="addProfilePicture">Profile Picture</label>
-                <input type="file" id="addProfilePicture" name="profilePicture" required>
-            </div>
-            <div class="modal-actions">
-                <button type="submit" class="save-btn">Save</button>
-                <button type="button" class="cancel-btn" onclick="closeAddModal()">Cancel</button>
-            </div>
-        </form>
+    <!-- Add Modal -->
+    <div id="addModal" class="form-modal">
+        <div class="form-modal-content">
+            <h2>Add New HR</h2>
+            <form onsubmit="return validateForm()" action="Partials/add_HR.php" method="post" enctype="multipart/form-data">
+                <!-- Form fields for adding new employee -->
+                <div class="form-group">
+                    <label for="addFirstName">First Name</label>
+                    <input type="text" id="addFirstName" name="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="addMiddleName">Middle Name</label>
+                    <input type="text" id="addMiddleName" name="middleName" required>
+                </div>
+                <div class="form-group">
+                    <label for="addLastName">Last Name</label>
+                    <input type="text" id="addLastName" name="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="addEmail">Email Address</label>
+                    <input type="email" id="addEmail" name="email" pattern="[a-zA-Z0-9._%+-]+@gmail\.com" required>
+                    <small>Must be a valid Gmail address (e.g., example@gmail.com)</small>
+                </div>
+                <div class="form-group">
+                    <label for="addAge">Age</label>
+                    <input type="number" id="addAge" name="age" required>
+                </div>
+                <div class="form-group">
+                    <label for="addPassword">Password</label>
+                    <input type="password" id="addPassword" name="password"
+                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}"
+                        title="Must contain at least 8 characters, including 1 uppercase letter, 1 number, and 1 special character"
+                        required>
+                    <small>Password must be at least 8 characters long, include 1 uppercase letter, 1 number, and 1 special character.</small>
+                </div>
+                <div class="form-group">
+                    <label class="file-label" for="addProfilePicture">Profile Picture</label>
+                    <input type="file" id="addProfilePicture" name="profilePicture" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="save-btn">Save</button>
+                    <button type="button" class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
     <!-- Edit Modal -->
     <div id="editModal" class="form-modal">
         <div class="form-modal-content">
             <h2>Edit HR</h2>
-            <form id="editEmployeeForm" action="Partials/update_HR.php" method="post" enctype="multipart/form-data">
+            <form id="editEmployeeForm" onsubmit="return validateEditForm()" action="Partials/update_HR.php" method="post" enctype="multipart/form-data">
                 <input type="hidden" id="editEmployeeId" name="employeeId">
 
                 <!-- Form fields for editing employee data -->
@@ -491,14 +489,16 @@ $branchesCount = 5;
                 <div class="form-group">
                     <label for="editEmail">Email Address</label>
                     <input type="email" id="editEmail" name="email" required>
+                    <small>Must be a valid Gmail address (e.g., example@gmail.com)</small>
                 </div>
                 <div class="form-group">
                     <label for="editAge">Age</label>
                     <input type="number" id="editAge" name="age" required>
                 </div>
                 <div class="form-group">
-                    <label for="editPassword">Re Enter Password</label>
+                    <label for="editPassword">Re-Enter Password</label>
                     <input type="password" id="editPassword" name="password" required>
+                    <small>Password must be at least 8 characters long, include 1 uppercase letter, 1 number, and 1 special character.</small>
                 </div>
                 <div class="form-group">
                     <label class="file-label" for="editProfilePicture">Profile Picture</label>
@@ -512,6 +512,7 @@ $branchesCount = 5;
         </div>
     </div>
 
+
     </div>
     <div id="logoutModal" class="modal">
         <div class="modal-content">
@@ -520,52 +521,108 @@ $branchesCount = 5;
             <button class="modal-btn cancel-btn" onclick="closeModal()">Cancel</button>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
-    function validateForm() {
-        const email = document.getElementById('addEmail').value;
-        const password = document.getElementById('addPassword').value;
+        function confirmDelete(event, id) {
+    event.preventDefault(); // Prevent the form from submitting
 
-        // Email validation: must end with @gmail.com
-        const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-        if (!emailPattern.test(email)) {
-            alert("Email must be a valid Gmail address (e.g., example@gmail.com).");
-            return false;
-        }
-
-        // Password validation: minimum 8 characters, 1 special character, 1 number, 1 uppercase letter
-        const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-        if (!passwordPattern.test(password)) {
-            if (password.length < 8) {
-                alert("Password must be at least 8 characters long.");
-            } else if (!/[A-Z]/.test(password)) {
-                alert("Password must contain at least one uppercase letter.");
-            } else if (!/\d/.test(password)) {
-                alert("Password must contain at least one number.");
-            } else if (!/[\W_]/.test(password)) {
-                alert("Password must contain at least one special character.");
+    // Show confirmation dialog
+    if (confirm("Are you sure you want to delete?")) {
+        // If confirmed, proceed with AJAX request
+        $.ajax({
+            url: 'Partials/delete.php', // URL of the PHP file that handles deletion
+            type: 'POST',
+            data: { id: id }, // Send the ID of the record to be deleted
+            success: function(response) {
+                // On success, reload the page or update the table dynamically
+                alert('Record deleted successfully.');
+                location.reload(); // Reload the page to reflect the changes
+            },
+            error: function(xhr, status, error) {
+                // On error, show an alert with the error message
+                alert('Failed to delete the record.');
+                console.log(error);
             }
-            return false;
+        });
+    }
+}
+
+        function validateForm() {
+            const email = document.getElementById('addEmail').value;
+            const password = document.getElementById('addPassword').value;
+
+            // Email validation: must end with @gmail.com
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+            if (!emailPattern.test(email)) {
+                alert("Email must be a valid Gmail address (e.g., example@gmail.com).");
+                return false;
+            }
+
+            // Password validation: minimum 8 characters, 1 special character, 1 number, 1 uppercase letter
+            const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+            if (!passwordPattern.test(password)) {
+                if (password.length < 8) {
+                    alert("Password must be at least 8 characters long.");
+                } else if (!/[A-Z]/.test(password)) {
+                    alert("Password must contain at least one uppercase letter.");
+                } else if (!/\d/.test(password)) {
+                    alert("Password must contain at least one number.");
+                } else if (!/[\W_]/.test(password)) {
+                    alert("Password must contain at least one special character.");
+                }
+                return false;
+            }
+
+            return true; // Allow form submission if all validations pass
         }
 
-        return true; // Allow form submission if all validations pass
-    }
+        function validateEditForm() {
+            const email = document.getElementById('editEmail').value;
+            const password = document.getElementById('editPassword').value;
 
-    function openAddModal() {
-        document.getElementById('addModal').style.display = 'block';
-    }
+            // Email validation: must end with @gmail.com
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+            if (!emailPattern.test(email)) {
+                alert("Email must be a valid Gmail address (e.g., example@gmail.com).");
+                return false;
+            }
 
-    function closeAddModal() {
-        document.getElementById('addModal').style.display = 'none';
-    }
+            // Password validation: minimum 8 characters, 1 special character, 1 number, 1 uppercase letter
+            const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+            if (!passwordPattern.test(password)) {
+                if (password.length < 8) {
+                    alert("Password must be at least 8 characters long.");
+                } else if (!/[A-Z]/.test(password)) {
+                    alert("Password must contain at least one uppercase letter.");
+                } else if (!/\d/.test(password)) {
+                    alert("Password must contain at least one number.");
+                } else if (!/[\W_]/.test(password)) {
+                    alert("Password must contain at least one special character.");
+                }
+                return false;
+            }
 
-    function openEditModal() {
-        document.getElementById('editModal').style.display = 'block';
-    }
+            return true; // Allow form submission if all validations pass
+        }
 
-    function closeEditModal() {
-        document.getElementById('editModal').style.display = 'none';
-    }
-</script>
+
+        function openAddModal() {
+            document.getElementById('addModal').style.display = 'block';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        function openEditModal() {
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+    </script>
 
     <script>
         function confirmLogout() {
@@ -575,6 +632,7 @@ $branchesCount = 5;
         function closeModal() {
             document.getElementById('logoutModal').style.display = 'none';
         }
+
         function logout() {
             window.location.href = '../login.php';
         }
@@ -616,7 +674,58 @@ $branchesCount = 5;
             document.getElementById('editModal').style.display = 'none';
         }
     </script>
+<script>
+$(document).ready(function() {
+    const $tableBody = $('table tbody');
+    const $pagination = $('.pagination');
+    
+    function fetchData(page, search = '') {
+        $.ajax({
+            type: 'POST',
+            url: 'Partials/fetch_data.php',
+            data: { page: page, search: search },
+            dataType: 'json',
+            success: function(response) {
+                // Clear existing table rows
+                $tableBody.empty();
+                
+                // Append new rows
+                response.data.forEach(row => {
+                    const profilePicture = row.profile_picture ? 'Partials/' + row.profile_picture : 'resources/default profile.png';
+                    $tableBody.append(`
+                        <tr>
+                            <td>${row.first_name} ${row.middle_name} ${row.last_name}</td>
+                            <td>${row.email}</td>
+                            <td>${row.age}</td>
+                            <td>••••••••</td>
+                            <td><img class='profile-img' src='${profilePicture}' alt='Profile Image'></td>
+                            <td class='actions'>
+                                <button class='edit-btn' onclick='openEditModal(${row.id})'>Edit</button>
+                                <button class='delete-btn' onclick='confirmDelete(event, ${row.id})'>Delete</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+                
+                // Update pagination
+                $pagination.empty();
+                for (let i = 1; i <= response.totalPages; i++) {
+                    $pagination.append(`<button ${i === page ? 'class="active"' : ''} onclick="fetchData(${i}, '${search}')">${i}</button>`);
+                }
+            }
+        });
+    }
 
+    // Initial load
+    fetchData(1);
+
+    // Search functionality
+    $('.search-bar input').on('input', function() {
+        const search = $(this).val();
+        fetchData(1, search);
+    });
+});
+</script>
 </body>
 
 </html>

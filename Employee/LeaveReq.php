@@ -224,7 +224,7 @@ $branchesCount = 5;
 
     <div class="leave-request-container">
         <h2 class="form-title">Leave Request Form</h2>
-        <form action="Partials/submit_leave_request.php" method="post" class="leave-form">
+        <form action="Partials/submit_leave_request.php" method="post" class="leave-form" onsubmit="return confirmSubmission()">
     <label for="leave-type" class="form-label">Leave Type</label>
     <select id="leave-type" name="leave_type" class="form-input">
         <option value="sick">Sick Leave</option>
@@ -266,7 +266,15 @@ $branchesCount = 5;
             window.location.href = '../login.php';
         }
     </script>
+<script>
+// Disable past dates
+document.getElementById('leave-date').setAttribute('min', new Date().toISOString().split('T')[0]);
 
+// Confirmation dialog on form submission
+function confirmSubmission() {
+    return confirm("Are you sure you want to submit this leave request?");
+}
+</script>
 
 </body>
 

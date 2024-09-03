@@ -369,56 +369,35 @@ $branchesCount = 5;
     </div>
 </div>
 
-        <!-- Table Container -->
-        <div class="table-container">
-            <div class="table-header">
-                <button class="add-btn" onclick="openAddModal()">Add</button>
-                <div class="search-bar">
-                    <input type="text" placeholder="Search...">
-                </div>
-            </div>
-
-            <table>
-    <thead>
-        <tr>
-            <th>Employee ID</th>
-            <th>First Name</th>
-            <th>Middle Name</th>
-            <th>Surname</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Hire Date</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                echo "<tr>";
-                echo "<td>" . $row['employee_id'] . "</td>";
-                echo "<td>" . $row['firstname'] . "</td>";
-                echo "<td>" . $row['middlename'] . "</td>";
-                echo "<td>" . $row['surname'] . "</td>";
-                echo "<td>" . $row['email'] . "</td>";
-                echo "<td>" . $row['phone'] . "</td>";
-                echo "<td>" . $row['hire_date'] . "</td>";
-                echo "</tr>";
-            }
-        } else {
-            echo "<tr><td colspan='7'>No employees found.</td></tr>";
-        }
-        ?>
-    </tbody>
-</table>
-
-            <div class="pagination">
-                <button class="disabled">&laquo; Previous</button>
-                <button>1</button>
-                <button>2</button>
-                <button>3</button>
-                <button>Next &raquo;</button>
+<div class="table-container">
+        <div class="table-header">
+            <button class="add-btn" onclick="openAddModal()">Add</button>
+            <div class="search-bar">
+                <input type="text" placeholder="Search..." id="searchInput">
             </div>
         </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>First Name</th>
+                    <th>Middle Name</th>
+                    <th>Surname</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Hire Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be injected here by JavaScript -->
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <!-- Pagination buttons will be injected here by JavaScript -->
+        </div>
+    </div>
 
     </div>
 <!-- Add Modal -->
@@ -553,6 +532,9 @@ $branchesCount = 5;
             <button class="modal-btn cancel-btn" onclick="closeModal()">Cancel</button>
         </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
     function validateEmployeeForm() {
         const email = document.getElementById('email').value;
@@ -621,7 +603,68 @@ $branchesCount = 5;
         }
     </script>
    
+    <script>
+        $(document).ready(function() {
+            let currentPage = 1;
+            const $tableBody = $('table tbody');
+            const $pagination = $('.pagination');
+            const $searchInput = $('#searchInput');
 
+            function fetchData(page, search = '') {
+                $.ajax({
+                    type: 'POST',
+                    url: 'Partials/employe_fetch_data.php',
+                    data: { page: page, search: search },
+                    dataType: 'json',
+                    success: function(response) {
+                        // Clear existing table rows
+                        $tableBody.empty();
+                        
+                        // Append new rows
+                        response.data.forEach(row => {
+                            $tableBody.append(
+                                `<tr>
+                                    <td>${row.employee_id}</td>
+                                    <td>${row.first_name}</td>
+                                    <td>${row.middle_name}</td>
+                                    <td>${row.last_name}</td>
+                                    <td>${row.email}</td>
+                                    <td>${row.phone}</td>
+                                    <td>${row.hire_date}</td>
+                                    <td class='actions'>
+                                        <button class='edit-btn' onclick='openEditModal(${row.id})'>Edit</button>
+                                        <button class='delete-btn' onclick='confirmDelete(event, ${row.id})'>Delete</button>
+                                    </td>
+                                </tr>`
+                            );
+                        });
+                        
+                        // Update pagination
+                        $pagination.empty();
+                        if (response.totalPages > 1) {
+                            const previousDisabled = currentPage === 1 ? 'class="disabled"' : '';
+                            const nextDisabled = currentPage === response.totalPages ? 'class="disabled"' : '';
+                            $pagination.append(`<button ${previousDisabled} onclick="fetchData(${currentPage - 1}, '${search}')">&laquo; Previous</button>`);
+                            for (let i = 1; i <= response.totalPages; i++) {
+                                $pagination.append(`<button ${i === currentPage ? 'class="active"' : ''} onclick="fetchData(${i}, '${search}')">${i}</button>`);
+                            }
+                            $pagination.append(`<button ${nextDisabled} onclick="fetchData(${currentPage + 1}, '${search}')">Next &raquo;</button>`);
+                        }
+                    }
+                });
+            }
+
+            // Initial load
+            fetchData(currentPage);
+
+            // Search functionality
+            $searchInput.on('input', function() {
+                const search = $(this).val();
+                currentPage = 1; // Reset to first page on search
+                fetchData(currentPage, search);
+            });
+        });
+    </script>
 </body>
 
 </html>

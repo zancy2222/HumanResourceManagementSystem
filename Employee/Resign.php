@@ -231,7 +231,7 @@ $branchesCount = 5;
 </div>
 <div class="resignation-form-container">
     <h2>Resignation Letter</h2>
-    <form action="Partials/submit_resignation.php" method="post">
+    <form action="Partials/submit_resignation.php" method="post" onsubmit="return confirmResignation()">
     <label for="resignation-date">Resignation Date:</label>
     <input type="date" id="resignation-date" name="resignation_date" required>
 
@@ -266,6 +266,15 @@ $branchesCount = 5;
         }
     </script>
 
+<script>
+// Disable past dates
+document.getElementById('resignation-date').setAttribute('min', new Date().toISOString().split('T')[0]);
+
+// Confirmation dialog on form submission
+function confirmResignation() {
+    return confirm("Are you sure you want to submit your resignation?");
+}
+</script>
 
 </body>
 
