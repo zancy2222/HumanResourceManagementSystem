@@ -544,58 +544,50 @@ $branchesCount = 5;
 
 
 <div class="table-container">
-            <!-- Table Container -->
-            <div class="shortlisted-applicant">
-    <h2>Resignation Employee</h2>
-</div>
+    <!-- Table Container -->
+    <div class="shortlisted-applicant">
+        <h2>Resignation Employee</h2>
+    </div>
     <div class="table-header">
         <div class="search-bar">
-            <input type="text" placeholder="Search...">
+            <input type="text" id="searchInput" placeholder="Search...">
         </div>
     </div>
     <table>
-    <thead>
-        <tr>
-            <th>Resignation ID</th>
-            <th>Employee ID</th>
-            <th>Employee Name</th>
-            <th>Resignation Date</th>
-            <th>Reason</th>
-            <th>Date Submitted</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php while ($row = $result->fetch_assoc()): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($row['id']); ?></td>
-            <td><?php echo htmlspecialchars($row['employee_id']); ?></td>
-            <td><?php echo htmlspecialchars($row['employee_name']); ?></td>
-            <td><?php echo htmlspecialchars($row['resignation_date']); ?></td>
-            <td><?php echo htmlspecialchars($row['reason']); ?></td>
-            <td><?php echo htmlspecialchars($row['date_submitted']); ?></td>
-            <td>
-    <form method="POST" action="">
-        <input type="hidden" name="resignation_id" value="<?php echo $row['id']; ?>">
-        <input type="hidden" name="employee_email" value="<?php echo $row['employee_email']; ?>">
-        <button type="submit" name="action" value="approve" class="approve-btn">Approve</button>
-        <button type="submit" name="action" value="delete" class="delete-btn">Delete</button>
-    </form>
-</td>
-
-        </tr>
-        <?php endwhile; ?>
-    </tbody>
-</table>
-
-    <div class="pagination">
-        <button class="disabled">&laquo; Previous</button>
-        <button>1</button>
-        <button>2</button>
-        <button>3</button>
-        <button>Next &raquo;</button>
-    </div>
+        <thead>
+            <tr>
+                <th>Resignation ID</th>
+                <th>Employee ID</th>
+                <th>Employee Name</th>
+                <th>Resignation Date</th>
+                <th>Reason</th>
+                <th>Date Submitted</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="resignationTable">
+            <?php while ($row = $result->fetch_assoc()): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($row['id']); ?></td>
+                <td><?php echo htmlspecialchars($row['employee_id']); ?></td>
+                <td><?php echo htmlspecialchars($row['employee_name']); ?></td>
+                <td><?php echo htmlspecialchars($row['resignation_date']); ?></td>
+                <td><?php echo htmlspecialchars($row['reason']); ?></td>
+                <td><?php echo htmlspecialchars($row['date_submitted']); ?></td>
+                <td>
+                    <form method="POST" action="">
+                        <input type="hidden" name="resignation_id" value="<?php echo $row['id']; ?>">
+                        <input type="hidden" name="employee_email" value="<?php echo $row['employee_email']; ?>">
+                        <button type="submit" name="action" value="approve" class="approve-btn">Approve</button>
+                        <button type="submit" name="action" value="delete" class="delete-btn">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <?php endwhile; ?>
+        </tbody>
+    </table>
 </div>
+
 
 
 
@@ -621,7 +613,35 @@ $branchesCount = 5;
             window.location.href = '../login.php';
         }
     </script>
+<script>
+// JavaScript to filter table rows based on search input
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    var input = this.value.toLowerCase();
+    var tableRows = document.querySelectorAll('#resignationTable tr');
 
+    tableRows.forEach(function(row) {
+        var resignationId = row.cells[0].textContent.toLowerCase();
+        var employeeId = row.cells[1].textContent.toLowerCase();
+        var employeeName = row.cells[2].textContent.toLowerCase();
+        var resignationDate = row.cells[3].textContent.toLowerCase();
+        var reason = row.cells[4].textContent.toLowerCase();
+        var dateSubmitted = row.cells[5].textContent.toLowerCase();
+
+        if (
+            resignationId.includes(input) ||
+            employeeId.includes(input) ||
+            employeeName.includes(input) ||
+            resignationDate.includes(input) ||
+            reason.includes(input) ||
+            dateSubmitted.includes(input)
+        ) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
 
 </body>
 </html>

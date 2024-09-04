@@ -380,47 +380,64 @@ $branchesCount = 5;
 </div>
     <!-- Employee Details -->
     <div class="table-container">
-        <div class="shortlisted-applicant">
-            <h2>Employee Details</h2>
-        </div>
-        <div class="table-header">
-            <div class="search-bar">
-                <input type="text" placeholder="Search...">
-            </div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Employee ID</th>
-                    <th>Name</th>
-                    <th>Hire Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                // Fetch and display employee data
-                $employeeStmt = $conn->query("SELECT e.employee_id, u.firstname, u.middlename, u.surname, e.hire_date FROM Employee e JOIN Users u ON e.archive_applicant_id = u.id");
-                while ($employee = $employeeStmt->fetch_assoc()) {
-                    echo "<tr>
-                            <td>{$employee['employee_id']}</td>
-                            <td>{$employee['firstname']} {$employee['middlename']} {$employee['surname']}</td>
-                            <td>{$employee['hire_date']}</td>
-                          </tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-        <div class="pagination">
-            <button class="disabled">&laquo; Previous</button>
-            <button>1</button>
-            <button>2</button>
-            <button>3</button>
-            <button>Next &raquo;</button>
+    <div class="shortlisted-applicant">
+        <h2>Employee Details</h2>
+    </div>
+    <div class="table-header">
+        <div class="search-bar">
+            <input type="text" id="searchEmployee" placeholder="Search...">
         </div>
     </div>
-    <div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Employee ID</th>
+                <th>Name</th>
+                <th>Hire Date</th>
+            </tr>
+        </thead>
+        <tbody id="employeeTable">
+            <?php
+            $limit = 5;
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $offset = ($page - 1) * $limit;
+
+            $totalCountStmt = $conn->query("SELECT COUNT(*) as total FROM Employee e JOIN Users u ON e.archive_applicant_id = u.id");
+            $totalCount = $totalCountStmt->fetch_assoc()['total'];
+            $totalPages = ceil($totalCount / $limit);
+
+            $employeeStmt = $conn->query("SELECT e.employee_id, u.firstname, u.middlename, u.surname, e.hire_date
+                                          FROM Employee e JOIN Users u ON e.archive_applicant_id = u.id
+                                          LIMIT $limit OFFSET $offset");
+
+            while ($employee = $employeeStmt->fetch_assoc()) {
+                echo "<tr>
+                        <td>{$employee['employee_id']}</td>
+                        <td>{$employee['firstname']} {$employee['middlename']} {$employee['surname']}</td>
+                        <td>{$employee['hire_date']}</td>
+                      </tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+    <div class="pagination">
+        <button <?php if ($page <= 1) echo 'class="disabled"'; ?> onclick="changePage(<?php echo $page - 1; ?>)">&laquo; Previous</button>
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <button <?php if ($i == $page) echo 'class="disabled"'; ?> onclick="changePage(<?php echo $i; ?>)"><?php echo $i; ?></button>
+        <?php endfor; ?>
+        <button <?php if ($page >= $totalPages) echo 'class="disabled"'; ?> onclick="changePage(<?php echo $page + 1; ?>)">Next &raquo;</button>
+    </div>
+</div>
+
+<!-- Leave Requests Table -->
+<div class="table-container">
     <div class="shortlisted-applicant">
         <h2>Leave Requests</h2>
+    </div>
+    <div class="table-header">
+        <div class="search-bar">
+            <input type="text" id="searchLeave" placeholder="Search...">
+        </div>
     </div>
     <table>
         <thead>
@@ -432,10 +449,18 @@ $branchesCount = 5;
                 <th>Date Submitted</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="leaveTable">
             <?php
-            // Fetch and display leave requests data
-            $leaveStmt = $conn->query("SELECT * FROM leave_requests");
+            $limit = 5;
+            $page = isset($_GET['page_leave']) ? (int)$_GET['page_leave'] : 1;
+            $offset = ($page - 1) * $limit;
+
+            $totalCountStmt = $conn->query("SELECT COUNT(*) as total FROM leave_requests");
+            $totalCount = $totalCountStmt->fetch_assoc()['total'];
+            $totalPages = ceil($totalCount / $limit);
+
+            $leaveStmt = $conn->query("SELECT * FROM leave_requests LIMIT $limit OFFSET $offset");
+
             while ($leaveRequest = $leaveStmt->fetch_assoc()) {
                 echo "<tr>
                         <td>{$leaveRequest['employee_id']}</td>
@@ -448,150 +473,191 @@ $branchesCount = 5;
             ?>
         </tbody>
     </table>
+    <div class="pagination">
+        <button <?php if ($page <= 1) echo 'class="disabled"'; ?> onclick="changePageLeave(<?php echo $page - 1; ?>)">&laquo; Previous</button>
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <button <?php if ($i == $page) echo 'class="disabled"'; ?> onclick="changePageLeave(<?php echo $i; ?>)"><?php echo $i; ?></button>
+        <?php endfor; ?>
+        <button <?php if ($page >= $totalPages) echo 'class="disabled"'; ?> onclick="changePageLeave(<?php echo $page + 1; ?>)">Next &raquo;</button>
+    </div>
 </div>
-    <!-- Applicant Details -->
-    <div class="table-container">
-        <div class="shortlisted-applicant">
-            <h2>Applicant Details</h2>
-        </div>
-        <div class="table-header">
-            <div class="search-bar">
-                <input type="text" placeholder="Search...">
-            </div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Applicant ID</th>
-                    <th>Name</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                // Fetch and display applicant data
-                $applicantStmt = $conn->query("SELECT a.id, u.firstname, u.middlename, u.surname, a.status FROM Applicant a JOIN Users u ON a.user_id = u.id");
-                while ($applicant = $applicantStmt->fetch_assoc()) {
-                    echo "<tr>
-                            <td>{$applicant['id']}</td>
-                            <td>{$applicant['firstname']} {$applicant['middlename']} {$applicant['surname']}</td>
-                            <td>{$applicant['status']}</td>
-                          </tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-        <div class="pagination">
-            <button class="disabled">&laquo; Previous</button>
-            <button>1</button>
-            <button>2</button>
-            <button>3</button>
-            <button>Next &raquo;</button>
+
+<!-- Applicant Details Table -->
+<div class="table-container">
+    <div class="shortlisted-applicant">
+        <h2>Applicant Details</h2>
+    </div>
+    <div class="table-header">
+        <div class="search-bar">
+            <input type="text" id="searchApplicant" placeholder="Search...">
         </div>
     </div>
-    
-    <div class="table-container">
-        <div class="shortlisted-applicant">
-            <h2>Attachment Details</h2>
-        </div>
-        <table class="attachments-table">
-            <thead>
-                <tr>
-                    <th>User Name</th>
-                    <th>File Name</th>
-                    <th>Certificates</th>
-                    <th>Upload Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                // Fetch and display attachment data along with user details
-                $stmt = $conn->prepare("
-                    SELECT u.firstname, u.middlename, u.surname, a.file_name, a.file_path, a.upload_date
-                    FROM Attachments a
-                    JOIN Users u ON a.user_id = u.id
-                ");
-                $stmt->execute();
-                $result = $stmt->get_result();
+    <table>
+        <thead>
+            <tr>
+                <th>Applicant ID</th>
+                <th>Name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="applicantTable">
+            <?php
+            $limit = 5;
+            $page = isset($_GET['page_applicant']) ? (int)$_GET['page_applicant'] : 1;
+            $offset = ($page - 1) * $limit;
 
-                while ($row = $result->fetch_assoc()) {
-                    $file_path = '../Applicant/uploads/' . htmlspecialchars($row['file_path']);
-                    $file_name = htmlspecialchars($row['file_name']);
-                    $upload_date = htmlspecialchars($row['upload_date']);
-                    $fullName = htmlspecialchars($row['firstname'] . ' ' . $row['middlename'] . ' ' . $row['surname']);
+            $totalCountStmt = $conn->query("SELECT COUNT(*) as total FROM Applicant a JOIN Users u ON a.user_id = u.id");
+            $totalCount = $totalCountStmt->fetch_assoc()['total'];
+            $totalPages = ceil($totalCount / $limit);
 
-                    // Determine if the file is an image
-                    $is_image = in_array(pathinfo($file_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
+            $applicantStmt = $conn->query("SELECT a.id, u.firstname, u.middlename, u.surname, a.status
+                                           FROM Applicant a JOIN Users u ON a.user_id = u.id
+                                           LIMIT $limit OFFSET $offset");
 
-                    echo "<tr>
-                        <td>{$fullName}</td>
-                        <td>{$file_name}</td>";
+            while ($applicant = $applicantStmt->fetch_assoc()) {
+                echo "<tr>
+                        <td>{$applicant['id']}</td>
+                        <td>{$applicant['firstname']} {$applicant['middlename']} {$applicant['surname']}</td>
+                        <td>{$applicant['status']}</td>
+                      </tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+    <div class="pagination">
+        <button <?php if ($page <= 1) echo 'class="disabled"'; ?> onclick="changePageApplicant(<?php echo $page - 1; ?>)">&laquo; Previous</button>
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <button <?php if ($i == $page) echo 'class="disabled"'; ?> onclick="changePageApplicant(<?php echo $i; ?>)"><?php echo $i; ?></button>
+        <?php endfor; ?>
+        <button <?php if ($page >= $totalPages) echo 'class="disabled"'; ?> onclick="changePageApplicant(<?php echo $page + 1; ?>)">Next &raquo;</button>
+    </div>
+</div>
 
-                    // Display image preview if the file is an image
-                    if ($is_image) {
-                        echo "<td><img src='{$file_path}' alt='{$file_name}' style='max-width: 100px; height: auto;'></td>";
-                    } else {
-                        echo "<td>No preview available</td>";
-                    }
+<!-- Attachment Details Table -->
+<div class="table-container">
+    <div class="shortlisted-applicant">
+        <h2>Attachment Details</h2>
+    </div>
+    <table class="attachments-table">
+        <thead>
+            <tr>
+                <th>User Name</th>
+                <th>File Name</th>
+                <th>Certificates</th>
+                <th>Upload Date</th>
+            </tr>
+        </thead>
+        <tbody id="attachmentTable">
+            <?php
+            $limit = 5;
+            $page = isset($_GET['page_attachment']) ? (int)$_GET['page_attachment'] : 1;
+            $offset = ($page - 1) * $limit;
 
-                    echo "<td>{$upload_date}</td>
-                    </tr>";
+            $totalCountStmt = $conn->query("SELECT COUNT(*) as total FROM Attachments a JOIN Users u ON a.user_id = u.id");
+            $totalCount = $totalCountStmt->fetch_assoc()['total'];
+            $totalPages = ceil($totalCount / $limit);
+
+            $stmt = $conn->prepare("
+                SELECT u.firstname, u.middlename, u.surname, a.file_name, a.file_path, a.upload_date
+                FROM Attachments a
+                JOIN Users u ON a.user_id = u.id
+                LIMIT $limit OFFSET $offset
+            ");
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $file_path = '../Applicant/uploads/' . htmlspecialchars($row['file_path']);
+                $file_name = htmlspecialchars($row['file_name']);
+                $upload_date = htmlspecialchars($row['upload_date']);
+                $fullName = htmlspecialchars($row['firstname'] . ' ' . $row['middlename'] . ' ' . $row['surname']);
+
+                $is_image = in_array(pathinfo($file_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
+
+                echo "<tr>
+                    <td>{$fullName}</td>
+                    <td>{$file_name}</td>";
+
+                if ($is_image) {
+                    echo "<td><img src='{$file_path}' alt='{$file_name}' style='max-width: 100px; height: auto;'></td>";
+                } else {
+                    echo "<td>No preview available</td>";
                 }
 
-               
-                ?>
-            </tbody>
-        </table>
+                echo "<td>{$upload_date}</td>
+                </tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+    <div class="pagination">
+        <button <?php if ($page <= 1) echo 'class="disabled"'; ?> onclick="changePageAttachment(<?php echo $page - 1; ?>)">&laquo; Previous</button>
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <button <?php if ($i == $page) echo 'class="disabled"'; ?> onclick="changePageAttachment(<?php echo $i; ?>)"><?php echo $i; ?></button>
+        <?php endfor; ?>
+        <button <?php if ($page >= $totalPages) echo 'class="disabled"'; ?> onclick="changePageAttachment(<?php echo $page + 1; ?>)">Next &raquo;</button>
     </div>
-    <!-- Failed Applicant Details -->
-    <div class="table-container">
-        <div class="shortlisted-applicant">
-            <h2>Failed Applicant Details</h2>
-        </div>
-        <div class="table-header">
-            <div class="search-bar">
-                <input type="text" placeholder="Search...">
-            </div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Applicant ID</th>
-                    <th>Name</th>
-                    <th>Failure Reason</th>
-                    <th>Failed At</th>
-                    <th>Action</th> <!-- Added Action column -->
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                // Fetch and display failed applicant data
-                $failedStmt = $conn->query("SELECT f.id, u.firstname, u.middlename, u.surname, f.failure_reason, f.failed_at FROM FailedApplicant f JOIN Users u ON f.user_id = u.id");
-                while ($failedApplicant = $failedStmt->fetch_assoc()) {
-                    echo "<tr>
-                            <td>{$failedApplicant['id']}</td>
-                            <td>{$failedApplicant['firstname']} {$failedApplicant['middlename']} {$failedApplicant['surname']}</td>
-                            <td>{$failedApplicant['failure_reason']}</td>
-                            <td>{$failedApplicant['failed_at']}</td>
-                            <td>
-                                <form method='post' action='Partials/activate_again.php'>
-                                    <input type='hidden' name='applicant_id' value='{$failedApplicant['id']}'>
-                                    <button type='submit'>Activate Again</button>
-                                </form>
-                            </td>
-                          </tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-        <div class="pagination">
-            <button class="disabled">&laquo; Previous</button>
-            <button>1</button>
-            <button>2</button>
-            <button>3</button>
-            <button>Next &raquo;</button>
+</div>
+
+<!-- Failed Applicant Details Table -->
+<div class="table-container">
+    <div class="shortlisted-applicant">
+        <h2>Failed Applicant Details</h2>
+    </div>
+    <div class="table-header">
+        <div class="search-bar">
+            <input type="text" id="searchFailed" placeholder="Search...">
         </div>
     </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Applicant ID</th>
+                <th>Name</th>
+                <th>Failure Reason</th>
+                <th>Failed At</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="failedTable">
+            <?php
+            $limit = 5;
+            $page = isset($_GET['page_failed']) ? (int)$_GET['page_failed'] : 1;
+            $offset = ($page - 1) * $limit;
+
+            $totalCountStmt = $conn->query("SELECT COUNT(*) as total FROM FailedApplicant f JOIN Users u ON f.user_id = u.id");
+            $totalCount = $totalCountStmt->fetch_assoc()['total'];
+            $totalPages = ceil($totalCount / $limit);
+
+            $failedStmt = $conn->query("SELECT f.id, u.firstname, u.middlename, u.surname, f.failure_reason, f.failed_at
+                                        FROM FailedApplicant f JOIN Users u ON f.user_id = u.id
+                                        LIMIT $limit OFFSET $offset");
+
+            while ($failedApplicant = $failedStmt->fetch_assoc()) {
+                echo "<tr>
+                        <td>{$failedApplicant['id']}</td>
+                        <td>{$failedApplicant['firstname']} {$failedApplicant['middlename']} {$failedApplicant['surname']}</td>
+                        <td>{$failedApplicant['failure_reason']}</td>
+                        <td>{$failedApplicant['failed_at']}</td>
+                        <td>
+                            <form method='post' action='Partials/activate_again.php'>
+                                <input type='hidden' name='applicant_id' value='{$failedApplicant['id']}'>
+                                <button type='submit'>Activate Again</button>
+                            </form>
+                        </td>
+                      </tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+    <div class="pagination">
+        <button <?php if ($page <= 1) echo 'class="disabled"'; ?> onclick="changePageFailed(<?php echo $page - 1; ?>)">&laquo; Previous</button>
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <button <?php if ($i == $page) echo 'class="disabled"'; ?> onclick="changePageFailed(<?php echo $i; ?>)"><?php echo $i; ?></button>
+        <?php endfor; ?>
+        <button <?php if ($page >= $totalPages) echo 'class="disabled"'; ?> onclick="changePageFailed(<?php echo $page + 1; ?>)">Next &raquo;</button>
+    </div>
+</div>
 </div>
 
 
@@ -614,7 +680,54 @@ $branchesCount = 5;
             window.location.href = '../login.php';
         }
     </script>
+<script>
+function changePage(page) {
+    window.location.href = `?page=${page}`;
+}
 
+function changePageLeave(page) {
+    window.location.href = `?page_leave=${page}`;
+}
+
+function changePageApplicant(page) {
+    window.location.href = `?page_applicant=${page}`;
+}
+
+function changePageAttachment(page) {
+    window.location.href = `?page_attachment=${page}`;
+}
+
+function changePageFailed(page) {
+    window.location.href = `?page_failed=${page}`;
+}
+
+document.getElementById('searchEmployee').addEventListener('keyup', function() {
+    filterTable('employeeTable', this.value);
+});
+
+document.getElementById('searchLeave').addEventListener('keyup', function() {
+    filterTable('leaveTable', this.value);
+});
+
+document.getElementById('searchApplicant').addEventListener('keyup', function() {
+    filterTable('applicantTable', this.value);
+});
+
+document.getElementById('searchFailed').addEventListener('keyup', function() {
+    filterTable('failedTable', this.value);
+});
+
+function filterTable(tableId, query) {
+    var rows = document.querySelectorAll(`#${tableId} tr`);
+    query = query.toLowerCase();
+
+    rows.forEach(function(row) {
+        var cells = row.getElementsByTagName('td');
+        var showRow = Array.from(cells).some(cell => cell.textContent.toLowerCase().includes(query));
+        row.style.display = showRow ? '' : 'none';
+    });
+}
+</script>
 
 </body>
 </html>

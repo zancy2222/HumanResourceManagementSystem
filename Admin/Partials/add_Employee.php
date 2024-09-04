@@ -1,4 +1,10 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'PHPMailer/src/PHPMailer.php';
+require 'PHPMailer/src/Exception.php';
+require 'PHPMailer/src/SMTP.php';
 include 'db_conn.php'; // Include your database connection file
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -70,7 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user_id = $stmt->insert_id; // Get the ID of the newly inserted user
 
         // Insert into ArchiveApplicant table with default values
-        // Note: We set the archive applicant ID to the user ID to ensure they are linked
         $stmt = $conn->prepare("INSERT INTO ArchiveApplicant (id, user_id, status, account_creation_completed, interview_completed, demo_teaching_completed, hire_completed) VALUES (?, ?, ?, 1, 1, 1, 1)");
         $stmt->bind_param("iis", $user_id, $user_id, $status);
         
@@ -82,7 +87,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bind_param("sis", $employee_id, $archive_applicant_id, $hire_date);
             
             if ($stmt->execute()) {
-                header("Location: ../Employee.php"); // Redirect to the main page after update
+                // Set up PHPMailer
+                $mail = new PHPMailer;
+                $mail->isSMTP();
+                $mail->Host       = 'smtp.gmail.com';
+                $mail->SMTPAuth   = true;
+                $mail->Username   = 'danielzanbaltazar.forwork@gmail.com'; // Change this to your email
+                $mail->Password   = 'nqzk mmww mxin ikve'; // Change this to your email password
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port       = 587;
+
+                // Recipients
+                $mail->setFrom('danielzanbaltazar.forwork@gmail.com', 'HRMS'); // Set the sender's email and name
+                $mail->addAddress($email, $firstname . ' ' . $surname); // Add recipient
+
+                // Content
+                $mail->isHTML(true); // Set email format to HTML
+                $mail->Subject = 'Your Account Has Been Created';
+                $mail->Body    = "<p>Hello $firstname $surname,</p>
+                                  <p>Your account has been created successfully. You can now log in and update your details as needed.</p>
+                                  <p>Best regards,<br>HRMS</p>";
+                
+                // Send the email
+                if (!$mail->send()) {
+                    echo '<script>alert("Error: Could not send email notification.");</script>';
+                }
+
+                // Redirect to the main page after update and email notification
+                header("Location: ../Employee.php");
                 exit();
             } else {
                 echo '<script>alert("Error: Could not insert employee record."); window.history.back();</script>';

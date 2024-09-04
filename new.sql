@@ -65,6 +65,10 @@ CREATE TABLE hr_members (
     profile_picture VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE hr_members 
+ADD COLUMN reset_token VARCHAR(255),
+ADD COLUMN reset_token_expiry DATETIME;
+
 CREATE TABLE FailedApplicant (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,

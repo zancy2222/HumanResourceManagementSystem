@@ -1,4 +1,10 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'PHPMailer/src/PHPMailer.php';
+require 'PHPMailer/src/Exception.php';
+require 'PHPMailer/src/SMTP.php';
 include 'db_conn.php'; // Include your database connection file
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -24,11 +30,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $conn->prepare("INSERT INTO hr_members (first_name, middle_name, last_name, email, age, password, profile_picture) VALUES (?, ?, ?, ?, ?, ?, ?)");
     
     // Bind parameters, ensuring correct types
-    // "s" for strings, "i" for integers
     $stmt->bind_param("ssssiss", $firstName, $middleName, $lastName, $email, $age, $password, $profilePicture);
 
     if ($stmt->execute()) {
-        header("Location: ../HrAccount.php"); // Redirect to the main page after update
+        // Account creation successful, send an email notification
+        $mail = new PHPMailer;
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'danielzanbaltazar.forwork@gmail.com'; // Change this to your email
+        $mail->Password   = 'nqzk mmww mxin ikve'; // Change this to your email password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        // Recipients
+        $mail->setFrom('danielzanbaltazar.forwork@gmail.com', 'HRMS'); // Set the sender's email and name
+        $mail->addAddress($email, $firstName . ' ' . $lastName); // Add recipient
+
+        // Content
+        $mail->isHTML(true); // Set email format to HTML
+        $mail->Subject = 'Account Created Successfully';
+        $mail->Body    = "<p>Hello $firstName $lastName,</p>
+                          <p>Your account has been created successfully. You can now log in and update your details as needed.</p>
+                          <p>Best regards,<br>HRMS</p>";
+        
+        // Send the email
+        if(!$mail->send()) {
+            echo 'Mailer Error: ' . $mail->ErrorInfo;
+        } else {
+            echo 'Message has been sent';
+        }
+
+        // Redirect to the main page after the account is created and email is sent
+        header("Location: ../HrAccount.php");
         exit();
     } else {
         echo "Error: " . $stmt->error;

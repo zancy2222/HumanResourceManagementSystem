@@ -163,6 +163,54 @@ $conn->close();
         table tbody tr:hover {
             background-color: #f9f9f9;
         }
+            /* Modal CSS */
+    .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 1; 
+        padding-top: 60px; 
+        left: 0;
+        top: 0;
+        width: 100%; 
+        height: 100%; 
+        overflow: auto; 
+        background-color: rgb(0,0,0); 
+        background-color: rgba(0,0,0,0.9); 
+    }
+
+    .modal-content {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 700px;
+    }
+
+    .modal-content { 
+        animation-name: zoom;
+        animation-duration: 0.6s;
+    }
+
+    @keyframes zoom {
+        from {transform:scale(0)} 
+        to {transform:scale(1)}
+    }
+
+    .close {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #f1f1f1;
+        font-size: 40px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: #bbb;
+        text-decoration: none;
+        cursor: pointer;
+    }
     </style>
 </head>
 <body>
@@ -201,55 +249,67 @@ $conn->close();
     <div class="table-container">
     <h2>Uploaded Attachments</h2>
     <table class="attachments-table">
-        <thead>
-            <tr>
-                <th>File Name</th>
-                <th>Certificates</th>
-                <th>Upload Date</th>
-                <th>Action</th> <!-- New Action column -->
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            include 'Partials/db_conn.php'; // Reconnect to fetch attachments
+    <thead>
+        <tr>
+            <th>File Name</th>
+            <th>Certificates</th>
+            <th>Upload Date</th>
+            <th>Action</th> <!-- Action column with Preview and Delete buttons -->
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        include 'Partials/db_conn.php'; // Reconnect to fetch attachments
 
-            $stmt = $conn->prepare("SELECT id, file_name, file_path, upload_date FROM Attachments WHERE user_id = ?");
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
+        $stmt = $conn->prepare("SELECT id, file_name, file_path, upload_date FROM Attachments WHERE user_id = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-            while ($row = $result->fetch_assoc()) {
-                $file_id = $row['id'];
-                $file_path = 'uploads/' . $row['file_path'];
-                $file_name = $row['file_name'];
-                $upload_date = $row['upload_date'];
-                
-                $is_image = in_array(pathinfo($file_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
+        while ($row = $result->fetch_assoc()) {
+            $file_id = $row['id'];
+            $file_path = 'uploads/' . $row['file_path'];
+            $file_name = $row['file_name'];
+            $upload_date = $row['upload_date'];
+            
+            $is_image = in_array(pathinfo($file_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
 
-                echo "<tr>
-                    <td>{$file_name}</td>";
+            echo "<tr>
+                <td>{$file_name}</td>";
 
-                if ($is_image) {
-                    echo "<td><img src='{$file_path}' alt='{$file_name}' style='max-width: 300px; height: auto;'></td>";
-                } else {
-                    echo "<td>No preview available</td>";
-                }
-
-                echo "<td>{$upload_date}</td>
-                    <td>
-                        <form action='Partials/delete_attachment.php' method='post' onsubmit='return confirm(\"Are you sure you want to delete this attachment?\");'>
-                            <input type='hidden' name='file_id' value='{$file_id}'>
-                            <button type='submit' class='delete-btn'>Delete</button>
-                        </form>
-                    </td>
-                </tr>";
+            if ($is_image) {
+                echo "<td><img src='{$file_path}' alt='{$file_name}' style='max-width: 100px; height: auto;'></td>";
+            } else {
+                echo "<td>No preview available</td>";
             }
 
-            $stmt->close();
-            $conn->close();
-            ?>
-        </tbody>
-    </table>
+            echo "<td>{$upload_date}</td>
+                <td>";
+
+            // Preview button for image files
+            if ($is_image) {
+                echo "<a href='#' class='preview-link' data-src='{$file_path}'>Preview</a> | ";
+            }
+
+            // Delete button
+            echo "<form action='Partials/delete_attachment.php' method='post' style='display:inline;' onsubmit='return confirm(\"Are you sure you want to delete this attachment?\");'>
+                        <input type='hidden' name='file_id' value='{$file_id}'>
+                        <button type='submit' class='delete-btn'>Delete</button>
+                  </form>
+                  </td>
+              </tr>";
+        }
+
+        $stmt->close();
+        $conn->close();
+        ?>
+    </tbody>
+</table>
+
+</div>
+<div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="fullImage">
 </div>
 
 </div>
@@ -273,6 +333,38 @@ $conn->close();
     function logout() {
         window.location.href = '../login.php';
     }
+</script>
+<script>
+    // Get the modal
+    var modal = document.getElementById("imageModal");
+
+    // Get the image and insert it inside the modal
+    var modalImg = document.getElementById("fullImage");
+    var previewLinks = document.querySelectorAll('.preview-link');
+
+    previewLinks.forEach(link => {
+        link.onclick = function(e) {
+            e.preventDefault();
+            modal.style.display = "block";
+            modalImg.src = this.dataset.src;
+        };
+    });
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() { 
+        modal.style.display = "none";
+    };
+
+    // Close the modal when clicking outside of the image
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
 </script>
 </body>
 </html>

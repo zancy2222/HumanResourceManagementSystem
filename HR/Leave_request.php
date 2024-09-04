@@ -523,62 +523,61 @@ $branchesCount = 5;
  
     <!-- Table Container for Leave Requests -->
     <div class="leave-requests-container">
-        <h2>Leave Requests</h2>
-        <div class="table-header">
-            <div class="search-bar">
-                <input type="text" placeholder="Search Leave Requests...">
-            </div>
+    <h2>Leave Requests</h2>
+    <div class="table-header">
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search Leave Requests...">
         </div>
-        <table>
-    <thead>
-        <tr>
-            <th>Employee Name</th>
-            <th>Leave Type</th>
-            <th>Leave Date</th> <!-- Added column -->
-            <th>Leave Reason</th>
-            <th>Date Submitted</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        if ($leave_requests->num_rows > 0) {
-            while ($row = $leave_requests->fetch_assoc()) {
-                $employeeName = htmlspecialchars($row['firstname'] . ' ' . $row['middlename'] . ' ' . $row['surname']);
-                $leaveType = htmlspecialchars($row['leave_type']);
-                $leaveDate = htmlspecialchars($row['leave_date']); // Added field
-                $leaveReason = htmlspecialchars($row['leave_reason']);
-                $dateSubmitted = htmlspecialchars($row['date_submitted']);
-                $requestId = $row['id'];
-
-                echo "<tr>
-                        <td>$employeeName</td>
-                        <td>$leaveType</td>
-                        <td>$leaveDate</td> <!-- Added field -->
-                        <td>$leaveReason</td>
-                        <td>$dateSubmitted</td>
-                        <td>
-                            <form method='POST' style='display:inline;'>
-                                <input type='hidden' name='request_id' value='$requestId'>
-                                <input type='hidden' name='action' value='approve'>
-                                <button type='submit' class='approve-btn'>Approve</button>
-                            </form>
-                            <form method='POST' style='display:inline;'>
-                                <input type='hidden' name='request_id' value='$requestId'>
-                                <input type='hidden' name='action' value='decline'>
-                                <button type='submit' class='decline-btn'>Decline</button>
-                            </form>
-                        </td>
-                    </tr>";
-            }
-        } else {
-            echo "<tr><td colspan='6'>No leave requests found</td></tr>"; // Updated colspan
-        }
-        ?>
-    </tbody>
-</table>
-
     </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Employee Name</th>
+                <th>Leave Type</th>
+                <th>Leave Date</th>
+                <th>Leave Reason</th>
+                <th>Date Submitted</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="leaveRequestsTable">
+            <?php
+            if ($leave_requests->num_rows > 0) {
+                while ($row = $leave_requests->fetch_assoc()) {
+                    $employeeName = htmlspecialchars($row['firstname'] . ' ' . $row['middlename'] . ' ' . $row['surname']);
+                    $leaveType = htmlspecialchars($row['leave_type']);
+                    $leaveDate = htmlspecialchars($row['leave_date']);
+                    $leaveReason = htmlspecialchars($row['leave_reason']);
+                    $dateSubmitted = htmlspecialchars($row['date_submitted']);
+                    $requestId = $row['id'];
+
+                    echo "<tr>
+                            <td>$employeeName</td>
+                            <td>$leaveType</td>
+                            <td>$leaveDate</td>
+                            <td>$leaveReason</td>
+                            <td>$dateSubmitted</td>
+                            <td>
+                                <form method='POST' style='display:inline;'>
+                                    <input type='hidden' name='request_id' value='$requestId'>
+                                    <input type='hidden' name='action' value='approve'>
+                                    <button type='submit' class='approve-btn'>Approve</button>
+                                </form>
+                                <form method='POST' style='display:inline;'>
+                                    <input type='hidden' name='request_id' value='$requestId'>
+                                    <input type='hidden' name='action' value='decline'>
+                                    <button type='submit' class='decline-btn'>Decline</button>
+                                </form>
+                            </td>
+                        </tr>";
+                }
+            } else {
+                echo "<tr><td colspan='6'>No leave requests found</td></tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
     </div>
 
 
@@ -603,7 +602,33 @@ $branchesCount = 5;
             window.location.href = '../login.php';
         }
     </script>
+<script>
+// JavaScript to filter table rows based on search input
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    var input = this.value.toLowerCase();
+    var tableRows = document.querySelectorAll('#leaveRequestsTable tr');
 
+    tableRows.forEach(function(row) {
+        var employeeName = row.cells[0].textContent.toLowerCase();
+        var leaveType = row.cells[1].textContent.toLowerCase();
+        var leaveDate = row.cells[2].textContent.toLowerCase();
+        var leaveReason = row.cells[3].textContent.toLowerCase();
+        var dateSubmitted = row.cells[4].textContent.toLowerCase();
+
+        if (
+            employeeName.includes(input) ||
+            leaveType.includes(input) ||
+            leaveDate.includes(input) ||
+            leaveReason.includes(input) ||
+            dateSubmitted.includes(input)
+        ) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
 
 </body>
 </html>

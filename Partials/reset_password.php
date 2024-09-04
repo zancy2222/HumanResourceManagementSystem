@@ -1,4 +1,3 @@
-<!-- reset_password.php -->
 <?php
 include 'db_conn.php';
 session_start();
@@ -6,22 +5,36 @@ session_start();
 if (isset($_GET['token'])) {
     $token = $_GET['token'];
 
-    // Check if the token is valid and not expired
+    // Check if the token is valid and not expired in Users table
     $stmt = $conn->prepare("SELECT email FROM Users WHERE reset_token = ? AND reset_token_expiry > NOW()");
     $stmt->bind_param("s", $token);
     $stmt->execute();
     $stmt->store_result();
-
+    
     if ($stmt->num_rows == 1) {
-        // Token is valid
+        // Token is valid for Users table
         $stmt->bind_result($email);
         $stmt->fetch();
         $stmt->close();
     } else {
-        // Token is invalid or expired
-        $_SESSION['message'] = ['class' => 'error', 'text' => 'Invalid or expired reset token.'];
-        header("Location: forgot_password.php");
-        exit();
+        // Token is invalid in Users, check in hr_members table
+        $stmt->close();
+        $stmt = $conn->prepare("SELECT email FROM hr_members WHERE reset_token = ? AND reset_token_expiry > NOW()");
+        $stmt->bind_param("s", $token);
+        $stmt->execute();
+        $stmt->store_result();
+
+        if ($stmt->num_rows == 1) {
+            // Token is valid for hr_members table
+            $stmt->bind_result($email);
+            $stmt->fetch();
+            $stmt->close();
+        } else {
+            // Token is invalid or expired in both tables
+            $_SESSION['message'] = ['class' => 'error', 'text' => 'Invalid or expired reset token.'];
+            header("Location: forgot_password.php");
+            exit();
+        }
     }
 } else {
     $_SESSION['message'] = ['class' => 'error', 'text' => 'No reset token provided.'];
@@ -162,7 +175,7 @@ body {
 }
 
 </style>
-<form class="form" action="process_reset_password.php" method="post">
+<form class="form" action="process_reset_password.php" method="post" onsubmit="return validateForm()">
     <div class="header">
         <img src="../resources/logo.png" alt="Logo">
         <h1>THE MINDS THAT MATTER SCHOOL</h1>
@@ -197,3 +210,32 @@ body {
         <p>Already Changed? <a href="login.php">Log In</a></p>
     </div>
 </form>
+<script>
+    function validateForm() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+
+        // Password pattern: at least 8 characters, 1 uppercase letter, 1 number, 1 special character
+        const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+        if (!passwordPattern.test(password)) {
+            if (password.length < 8) {
+                alert("Password must be at least 8 characters long.");
+            } else if (!/[A-Z]/.test(password)) {
+                alert("Password must contain at least one uppercase letter.");
+            } else if (!/\d/.test(password)) {
+                alert("Password must contain at least one number.");
+            } else if (!/[\W_]/.test(password)) {
+                alert("Password must contain at least one special character.");
+            }
+            return false;
+        }
+
+        if (password !== confirmPassword) {
+            alert("Passwords do not match.");
+            return false;
+        }
+
+        return true; // Allow form submission if all validations pass
+    }
+</script>

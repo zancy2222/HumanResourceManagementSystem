@@ -10,8 +10,11 @@ $searchTerm = isset($_POST['search']) ? '%' . $conn->real_escape_string($_POST['
 $offset = ($page - 1) * $limit;
 
 // Prepare SQL query
-$sql = "SELECT * FROM hr_members 
-        WHERE CONCAT(first_name, ' ', middle_name, ' ', last_name) LIKE ? 
+$sql = "SELECT e.employee_id, u.firstname, u.middlename, u.surname, u.email, u.phone, e.hire_date 
+        FROM Employee e 
+        JOIN ArchiveApplicant aa ON e.archive_applicant_id = aa.id
+        JOIN Users u ON aa.user_id = u.id
+        WHERE CONCAT(u.firstname, ' ', u.middlename, ' ', u.surname) LIKE ? 
         LIMIT ? OFFSET ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("sii", $searchTerm, $limit, $offset);
@@ -25,8 +28,11 @@ while ($row = $result->fetch_assoc()) {
 }
 
 // Get total number of records for pagination
-$countSql = "SELECT COUNT(*) as total FROM hr_members 
-             WHERE CONCAT(first_name, ' ', middle_name, ' ', last_name) LIKE ?";
+$countSql = "SELECT COUNT(*) as total 
+             FROM Employee e 
+             JOIN ArchiveApplicant aa ON e.archive_applicant_id = aa.id
+             JOIN Users u ON aa.user_id = u.id
+             WHERE CONCAT(u.firstname, ' ', u.middlename, ' ', u.surname) LIKE ?";
 $countStmt = $conn->prepare($countSql);
 $countStmt->bind_param("s", $searchTerm);
 $countStmt->execute();
